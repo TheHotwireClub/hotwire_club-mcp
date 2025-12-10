@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "hotwire_club/mcp"
+
+# Load documents from corpus
+puts "Loading documents from corpus/..."
+docs = HotwireClub::MCP::Loader.load_docs("corpus")
+
+puts "\n=== Summary ==="
+puts "Total documents loaded: #{docs.length}"
+
+if docs.any?
+  puts "\n=== Chunking Documents ==="
+  chunks = HotwireClub::MCP::Chunker.chunk_docs(docs)
+
+  puts "Total chunks created: #{chunks.length}"
+
+  puts "\n=== First Document Chunks ==="
+  first_doc = docs.first
+  
+  # Find chunks for first document by finding chunks until position resets to 0
+  # (which indicates start of next document) or end of chunks
+  first_doc_chunks = []
+  chunks.each do |chunk|
+    if chunk.position == 0 && !first_doc_chunks.empty?
+      break
+    end
+    first_doc_chunks << chunk
+  end
+
+  puts "Document: #{first_doc.title}"
+  puts "Number of chunks: #{first_doc_chunks.length}"
+
+  first_doc_chunks.each_with_index do |chunk, i|
+    puts "\n--- Chunk #{i + 1} (Position: #{chunk.position}) ---"
+    puts "Title: #{chunk.title || '(no title)'}"
+    puts "Category: #{chunk.category.inspect}"
+    puts "Tags: #{chunk.tags.inspect}"
+    puts "Text length: #{chunk.text.length} characters"
+    puts "Text preview (first 200 chars):"
+    puts chunk.text[0..200]
+  end
+
+  puts "\n=== All Chunks Summary ==="
+  # Group chunks by document (since doc.id may be nil, we'll track by processing order)
+  doc_index = 0
+  current_doc_chunks = []
+  
+  chunks.each do |chunk|
+    # If this chunk's position is 0, it's likely the start of a new document
+    # (unless it's the very first chunk)
+    if chunk.position == 0 && !current_doc_chunks.empty?
+      # Print previous document's chunks
+      if doc_index < docs.length
+        doc = docs[doc_index]
+        puts "\nDocument: #{doc.title} (#{current_doc_chunks.length} chunks)"
+        current_doc_chunks.each do |c|
+          puts "  Position #{c.position}: #{c.title || '(no title)'} (#{c.text.length} chars)"
+        end
+      end
+      doc_index += 1
+      current_doc_chunks = []
+    end
+    current_doc_chunks << chunk
+  end
+  
+  # Print last document's chunks
+  if doc_index < docs.length && !current_doc_chunks.empty?
+    doc = docs[doc_index]
+    puts "\nDocument: #{doc.title} (#{current_doc_chunks.length} chunks)"
+    current_doc_chunks.each do |c|
+      puts "  Position #{c.position}: #{c.title || '(no title)'} (#{c.text.length} chars)"
+    end
+  end
+else
+  puts "No documents found. Make sure corpus/*.md files have 'ready: true' in front matter."
+end
