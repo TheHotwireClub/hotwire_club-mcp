@@ -3,6 +3,8 @@
 require_relative "mcp/version"
 require_relative "mcp/doc"
 require_relative "mcp/loader"
+require_relative "mcp/chunk"
+require_relative "mcp/chunker"
 
 module HotwireClub
   module MCP
