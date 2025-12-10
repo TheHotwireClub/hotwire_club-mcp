@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "hotwire_club/mcp"
+
+# Load documents from corpus
+puts "Loading documents from corpus/..."
+docs = HotwireClub::MCP::Loader.load_docs("corpus")
+
+puts "\n=== Summary ==="
+puts "Total documents loaded: #{docs.length}"
+
+if docs.any?
+  puts "\n=== First Document ==="
+  doc = docs.first
+  puts "ID: #{doc.id.inspect}"
+  puts "Title: #{doc.title}"
+  puts "Date: #{doc.date.inspect}"
+  puts "Category: #{doc.category.inspect}"
+  puts "Tags: #{doc.tags.inspect}"
+  puts "Summary: #{doc.summary}"
+  puts "Body length: #{doc.body.length} characters"
+  puts "Body preview (first 200 chars):"
+  puts doc.body[0..200]
+  
+  puts "\n=== All Documents ==="
+  docs.each_with_index do |d, i|
+    puts "#{i + 1}. #{d.title} (#{d.category})"
+  end
+else
+  puts "No documents found. Make sure corpus/*.md files have 'ready: true' in front matter."
+end

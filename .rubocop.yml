@@ -1,0 +1,192 @@
+plugins:
+  - rubocop-minitest
+  - rubocop-rake
+
+AllCops:
+  TargetRubyVersion: 3.1
+  NewCops: enable
+  Exclude:
+    - 'vendor/**/*'
+    - 'tmp/**/*'
+    - 'db/**/*'
+    - 'bin/**/*'
+    - 'exe/**/*'
+    - '*.gemspec'
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - '*.gemspec'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'test/**/*'
+    - 'spec/**/*'
+    - '*.gemspec'
+
+Metrics/MethodLength:
+  Max: 30
+  Exclude:
+    - 'test/**/*'
+    - 'spec/**/*'
+
+Metrics/AbcSize:
+  Max: 20
+  Exclude:
+    - 'test/**/*'
+    - 'spec/**/*'
+
+Metrics/ClassLength:
+  Max: 200
+  Exclude:
+    - 'test/**/*'
+    - 'spec/**/*'
+
+Metrics/ModuleLength:
+  Max: 200
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Naming/FileName:
+  Exclude:
+    - '*.gemspec'
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/HashSyntax:
+  EnforcedStyle: ruby19
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: aligned
+
+Layout/FirstHashElementIndentation:
+  EnforcedStyle: consistent
+
+Layout/HashAlignment:
+  EnforcedColonStyle: table
+  EnforcedHashRocketStyle: table
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+
+Style/ClassAndModuleChildren:
+  EnforcedStyle: nested
+
+Style/EmptyMethod:
+  EnforcedStyle: expanded
+
+
+Style/GuardClause:
+  MinBodyLength: 3
+
+Style/MultilineBlockChain:
+  Enabled: false
+
+Layout/EmptyLinesAroundBlockBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundMethodBody:
+  Enabled: false
+
+Layout/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+
+Layout/SpaceInsideBlockBraces:
+  EnforcedStyle: space
+
+Style/BlockDelimiters:
+  EnforcedStyle: semantic
+
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+Style/WordArray:
+  EnforcedStyle: brackets
+
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    '%': '()'
+    '%i': '()'
+    '%q': '()'
+    '%Q': '()'
+    '%r': '{}'
+    '%s': '()'
+    '%w': '()'
+    '%W': '()'
+    '%x': '()'
+
+Style/RegexpLiteral:
+  EnforcedStyle: percent_r
+
+Style/RedundantReturn:
+  AllowMultipleReturnValues: true
+
+Style/RedundantSelf:
+  Enabled: true
+
+Style/RescueModifier:
+  Enabled: false
+
+Style/SafeNavigation:
+  Enabled: true
+
+Style/Semicolon:
+  AllowAsExpressionSeparator: true
+
+Style/TrivialAccessors:
+  Enabled: false
+
+Style/YodaCondition:
+  Enabled: false
+
+Lint/AmbiguousBlockAssociation:
+  Enabled: false
+
+Lint/SuppressedException:
+  Enabled: false
+
+Lint/UselessAssignment:
+  Enabled: true
+
+Lint/UnusedMethodArgument:
+  AllowUnusedKeywordArguments: true
+
+Lint/UnusedBlockArgument:
+  AllowUnusedKeywordArguments: true
+
+Naming/MethodParameterName:
+  AllowedNames:
+    - id
+    - to
+    - ok
+    - op
+    - io
+    - db
+
+Naming/VariableNumber:
+  Enabled: false
+
+Naming/BinaryOperatorParameterName:
+  Enabled: false
+

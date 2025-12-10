@@ -10,12 +10,12 @@ Gem::Specification.new do |spec|
 
   spec.summary = "TODO: Write a short summary, because RubyGems requires one."
   spec.description = "TODO: Write a longer description or delete this line."
-  spec.homepage = "TODO: Put your gem's website or public repo URL here."
+  # spec.homepage = "TODO: Put your gem's website or public repo URL here."
   spec.required_ruby_version = ">= 3.1.0"
 
   spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
 
-  spec.metadata["homepage_uri"] = spec.homepage
+  # spec.metadata["homepage_uri"] = spec.homepage
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
@@ -30,6 +30,10 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  # Uncomment to register a new dependency of your gem
-  # spec.add_dependency "example-gem", "~> 1.0"
+  spec.add_dependency "front_matter_parser", "~> 1.0"
+
+  spec.add_development_dependency "minitest", "~> 5.16"
+  spec.add_development_dependency "rubocop", "~> 1.0"
+  spec.add_development_dependency "rubocop-minitest", "~> 0.38"
+  spec.add_development_dependency "rubocop-rake", "~> 0.7"
 end
