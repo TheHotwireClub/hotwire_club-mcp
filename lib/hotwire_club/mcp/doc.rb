@@ -1,6 +1,29 @@
 # frozen_string_literal: true
 
 require "front_matter_parser"
+require "date"
+require "psych"
+
+# Configure Psych to allow Date class (required for Psych 5.x)
+# Psych 5.x uses a restricted class loader that blocks Date by default
+# Patch the restricted class loader to allow Date, Time, DateTime
+if defined?(Psych) && Psych::VERSION >= "5.0" && defined?(Psych::ClassLoader::Restricted)
+  Psych::ClassLoader::Restricted.class_eval do
+    alias_method :original_find, :find
+    def find(name)
+      case name
+      when "Date"
+        Date
+      when "Time"
+        Time
+      when "DateTime"
+        DateTime
+      else
+        original_find(name)
+      end
+    end
+  end
+end
 
 module HotwireClub
   module MCP
