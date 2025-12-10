@@ -14,8 +14,8 @@ module HotwireClub
         return [] unless corpus_dir.directory?
 
         corpus_dir.glob("*.md")
-          .map { |file| Doc.from_file(file.to_s) }
-          .compact
+                  .map { |file| Doc.from_file(file.to_s) }
+                  .compact
       end
     end
   end

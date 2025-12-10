@@ -5,7 +5,7 @@ require "front_matter_parser"
 module HotwireClub
   module MCP
     # Data class representing a single document
-    Doc = Data.define(:id, :title, :category, :tags, :body, :summary) do
+    Doc = Data.define(:id, :title, :category, :tags, :body, :summary) {
       def self.from_file(file_path)
         parsed = FrontMatterParser::Parser.parse_file(file_path)
         front_matter = parsed.front_matter
@@ -29,14 +29,14 @@ module HotwireClub
         summary = front_matter["description"] || body.split("\n\n").first
 
         new(
-          id: nil,
-          title: title,
+          id:       nil,
+          title:    title,
           category: category,
-          tags: tags,
-          body: body,
-          summary: summary
+          tags:     tags,
+          body:     body,
+          summary:  summary,
         )
       end
-    end
+    }
   end
 end
