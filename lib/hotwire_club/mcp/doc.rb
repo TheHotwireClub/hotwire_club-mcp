@@ -28,7 +28,7 @@ end
 module HotwireClub
   module MCP
     # Data class representing a single document
-    Doc = Data.define(:id, :title, :category, :tags, :body, :summary) {
+    Doc = Data.define(:id, :title, :category, :tags, :body, :summary, :date) {
       def self.from_file(file_path)
         parsed = FrontMatterParser::Parser.parse_file(file_path)
         front_matter = parsed.front_matter
@@ -51,6 +51,9 @@ module HotwireClub
         # Summary can be from description or first paragraph
         summary = front_matter["description"] || body.split("\n\n").first
 
+        # Extract date from front matter
+        date = front_matter["date"]
+
         new(
           id:       nil,
           title:    title,
@@ -58,6 +61,7 @@ module HotwireClub
           tags:     tags,
           body:     body,
           summary:  summary,
+          date:     date,
         )
       end
     }

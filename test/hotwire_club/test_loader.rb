@@ -43,6 +43,7 @@ module HotwireClub
       assert_equal 1, docs.length
       assert_nil docs.first.id
       assert_equal "Ready Document", docs.first.title
+      assert_nil docs.first.date
     end
 
     def test_filters_out_documents_with_ready_false
@@ -72,6 +73,7 @@ module HotwireClub
 
       assert_equal 1, docs.length
       assert_nil docs.first.id
+      assert_nil docs.first.date
     end
 
     def test_uses_front_matter_metadata
@@ -79,6 +81,7 @@ module HotwireClub
       File.write(file, <<~MARKDOWN)
         ---
         title: Test Document
+        date: 2023-04-25
         categories:
           - Turbo Drive
           - Stimulus
@@ -99,6 +102,7 @@ module HotwireClub
 
       assert_nil doc.id
       assert_equal "Test Document", doc.title
+      assert_equal Date.new(2023, 4, 25), doc.date
       assert_equal "Turbo Drive", doc.category
       assert_equal ["rendering", "events"], doc.tags
       assert_equal "This is a test description", doc.summary
@@ -231,6 +235,41 @@ module HotwireClub
 
       assert_equal 1, docs.length
       assert_equal "This is the first paragraph.", docs.first.summary
+    end
+
+    def test_parses_date_from_front_matter
+      file = File.join(@corpus_dir, "test.md")
+      File.write(file, <<~MARKDOWN)
+        ---
+        title: Test Document
+        date: 2023-04-25
+        ready: true
+        ---
+
+        Content
+      MARKDOWN
+
+      docs = HotwireClub::MCP::Loader.load_docs(@corpus_dir)
+
+      assert_equal 1, docs.length
+      assert_equal Date.new(2023, 4, 25), docs.first.date
+    end
+
+    def test_date_is_nil_when_not_present
+      file = File.join(@corpus_dir, "test.md")
+      File.write(file, <<~MARKDOWN)
+        ---
+        title: Test Document
+        ready: true
+        ---
+
+        Content
+      MARKDOWN
+
+      docs = HotwireClub::MCP::Loader.load_docs(@corpus_dir)
+
+      assert_equal 1, docs.length
+      assert_nil docs.first.date
     end
 
     def test_returns_empty_array_when_corpus_directory_does_not_exist
