@@ -14,12 +14,7 @@ module HotwireClub
       # @param docs [Array<Doc>] Array of Doc objects to chunk
       # @return [Array<Chunk>] Array of Chunk objects
       def self.chunk_docs(docs)
-        chunks = []
-        docs.each do |doc|
-          doc_chunks = chunk_doc(doc)
-          chunks.concat(doc_chunks)
-        end
-        chunks
+        docs.flat_map { |doc| chunk_doc(doc) }
       end
 
       # Chunk a single document
@@ -27,27 +22,16 @@ module HotwireClub
       # @param doc [Doc] Document to chunk
       # @return [Array<Chunk>] Array of Chunk objects for this document
       def self.chunk_doc(doc)
-        sections = split_by_headings(doc.body)
-        chunks = []
-        position = 0
-
-        sections.each do |section|
-          section_chunks = split_by_size(section[:text], section[:title])
-          section_chunks.each do |chunk_text|
-            chunks << Chunk.new(
-              id:       nil,
-              doc_id:   doc.id,
-              title:    section[:title],
-              category: doc.category,
-              tags:     doc.tags,
-              position: position,
-              text:     chunk_text,
+        pos = -1
+        split_by_headings(doc.body).flat_map do |section|
+          split_by_size(section[:text], section[:title]).map do |chunk_text|
+            Chunk.new(
+              id: nil, doc_id: doc.id, title: section[:title],
+              category: doc.category, tags: doc.tags,
+              position: pos += 1, text: chunk_text
             )
-            position += 1
           end
         end
-
-        chunks
       end
 
       # Split document body by headings (# and ##)
@@ -56,44 +40,19 @@ module HotwireClub
       # @return [Array<Hash>] Array of hashes with :title and :text keys
       def self.split_by_headings(body)
         sections = []
-        current_section = {title: nil, text: ""}
+        current = {title: nil, text: ""}
 
         body.lines.each do |line|
-          if heading?(line)
-            sections << current_section.dup if section_has_content?(current_section)
-            current_section = new_section_from_heading(line)
+          if line.match?(%r{^##?\s+})
+            sections << current.dup if current[:text].strip.length.positive?
+            current = {title: line.sub(%r{^##?\s+}, "").strip, text: line}
           else
-            current_section[:text] += line
+            current[:text] += line
           end
         end
 
-        sections << current_section if section_has_content?(current_section)
+        sections << current if current[:text].strip.length.positive?
         sections.empty? ? [{title: nil, text: body}] : sections
-      end
-
-      # Check if a line is a heading (# or ##)
-      #
-      # @param line [String] Line to check
-      # @return [Boolean] True if line is a heading
-      def self.heading?(line)
-        line.match?(%r{^##?\s+})
-      end
-
-      # Check if a section has content
-      #
-      # @param section [Hash] Section to check
-      # @return [Boolean] True if section has content
-      def self.section_has_content?(section)
-        section[:text].strip.length.positive?
-      end
-
-      # Create a new section from a heading line
-      #
-      # @param line [String] Heading line
-      # @return [Hash] New section hash
-      def self.new_section_from_heading(line)
-        title = line.sub(%r{^##?\s+}, "").strip
-        {title: title, text: line}
       end
 
       # Split text by size, respecting paragraph boundaries
@@ -105,50 +64,35 @@ module HotwireClub
         return [text] if text.length <= MAX_SIZE
 
         chunks = []
-        paragraphs = split_into_paragraphs(text)
-        current_chunk = ""
+        current = ""
 
-        paragraphs.each do |paragraph|
-          if paragraph.length > MAX_SIZE
-            current_chunk = handle_oversized_paragraph(paragraph, current_chunk, chunks)
-          elsif should_start_new_chunk?(current_chunk, paragraph)
-            chunks << current_chunk.strip
-            current_chunk = paragraph
+        split_into_paragraphs(text).each do |para|
+          if para.length > MAX_SIZE
+            current = handle_oversized(para, current, chunks)
+          elsif should_split?(current, para)
+            chunks << current.strip
+            current = para
           else
-            current_chunk += paragraph
+            current += para
           end
         end
 
-        chunks << current_chunk.strip if current_chunk.strip.length.positive?
+        chunks << current.strip if current.strip.length.positive?
         chunks
       end
 
-      # Handle an oversized paragraph by splitting it
-      #
-      # @param paragraph [String] Paragraph that exceeds MAX_SIZE
-      # @param current_chunk [String] Current chunk being built
-      # @param chunks [Array<String>] Array of completed chunks
-      # @return [String] Remaining chunk text
-      def self.handle_oversized_paragraph(paragraph, current_chunk, chunks)
-        chunks << current_chunk.strip if current_chunk.strip.length.positive?
-
-        paragraph_chunks = split_oversized_paragraph(paragraph)
-        chunks.concat(paragraph_chunks[0..-2]) # Add all but the last
-        paragraph_chunks.last || ""
+      def self.handle_oversized(para, current, chunks)
+        chunks << current.strip if current.strip.length.positive?
+        para_chunks = split_oversized_paragraph(para)
+        chunks.concat(para_chunks[0..-2])
+        para_chunks.last || ""
       end
 
-      # Determine if a new chunk should be started
-      #
-      # @param current_chunk [String] Current chunk being built
-      # @param paragraph [String] Next paragraph to add
-      # @return [Boolean] True if a new chunk should be started
-      def self.should_start_new_chunk?(current_chunk, paragraph)
-        return false unless current_chunk.length.positive?
+      def self.should_split?(current, para)
+        return false unless current.length.positive?
 
-        exceeds_max = (current_chunk.length + paragraph.length) > MAX_SIZE
-        near_target = current_chunk.length >= TARGET_SIZE && paragraph.length > (MAX_SIZE - TARGET_SIZE)
-
-        exceeds_max || near_target
+        (current.length + para.length > MAX_SIZE) ||
+          (current.length >= TARGET_SIZE && para.length > (MAX_SIZE - TARGET_SIZE))
       end
 
       # Split an oversized paragraph by sentences or at word boundaries
@@ -160,22 +104,14 @@ module HotwireClub
         remaining = paragraph
 
         while remaining.length > MAX_SIZE
-          # Try to split at sentence boundaries first
-          # Look for sentence endings followed by space
-          split_pos = remaining[0..MAX_SIZE].rindex(%r{[.!?]\s+})
-
-          # If no sentence boundary found, try word boundary
-          split_pos = remaining[0..MAX_SIZE].rindex(%r{\s+}) if split_pos.nil?
-
-          # If still no good split point, force split at MAX_SIZE
-          split_pos ||= MAX_SIZE
-
-          chunks << remaining[0..split_pos].strip
-          remaining = remaining[(split_pos + 1)..] || ""
+          pos = remaining[0..MAX_SIZE].rindex(%r{[.!?]\s+}) ||
+                remaining[0..MAX_SIZE].rindex(%r{\s+}) ||
+                MAX_SIZE
+          chunks << remaining[0..pos].strip
+          remaining = remaining[(pos + 1)..] || ""
         end
 
         chunks << remaining.strip if remaining.strip.length.positive?
-
         chunks
       end
 
@@ -184,18 +120,9 @@ module HotwireClub
       # @param text [String] Text to split
       # @return [Array<String>] Array of paragraphs
       def self.split_into_paragraphs(text)
-        # Split by double newlines, preserving them
-        paragraphs = text.split(%r{(\n\n+)})
-        # Recombine separators with following content
-        result = []
-        paragraphs.each_slice(2) do |content, separator|
-          if separator
-            result << (content + separator)
-          elsif content&.length&.positive?
-            result << content
-          end
+        text.split(%r{(\n\n+)}).each_slice(2).filter_map do |content, separator|
+          separator ? (content + separator) : (content if content&.length&.positive?)
         end
-        result
       end
     end
   end
