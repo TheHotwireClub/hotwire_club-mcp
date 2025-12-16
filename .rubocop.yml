@@ -55,6 +55,9 @@ Metrics/ModuleLength:
 Metrics/CyclomaticComplexity:
   Max: 10
 
+Metrics/ParameterLists:
+  Max: 6
+
 Naming/FileName:
   Exclude:
     - '*.gemspec'
