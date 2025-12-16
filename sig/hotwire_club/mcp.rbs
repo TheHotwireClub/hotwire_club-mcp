@@ -1,6 +1,110 @@
 module HotwireClub
-  module Mcp
+  module MCP
     VERSION: String
-    # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+    # Data class representing a single document
+    class Doc
+      attr_reader id: String?
+      attr_reader title: String
+      attr_reader category: String?
+      attr_reader tags: Array[String]
+      attr_reader body: String
+      attr_reader summary: String
+      attr_reader date: Date | String | nil
+
+      # Generate a stable document ID from a title
+      def self.id_from_title: (String?) -> String?
+
+      # Create a Doc instance from a file path
+      def self.from_file: (String file_path) -> Doc?
+
+      # Extract title from front matter or filename
+      def self.extract_title: (Hash[untyped, untyped] front_matter, String file_path) -> String
+
+      # Extract category from front matter
+      def self.extract_category: (Hash[untyped, untyped] front_matter) -> String?
+
+      # Extract summary from front matter or body
+      def self.extract_summary: (Hash[untyped, untyped] front_matter, String body) -> String
+    end
+
+    # Data class representing a single chunk of a document
+    class Chunk
+      attr_reader id: String
+      attr_reader doc_id: String
+      attr_reader title: String?
+      attr_reader category: String?
+      attr_reader tags: Array[String]
+      attr_reader position: Integer
+      attr_reader text: String
+
+      # Create a chunk from a document section
+      def self.create_from_section: (
+        doc: Doc,
+        section_idx: Integer,
+        part_idx: Integer,
+        section_title: String?,
+        text: String,
+        position: Integer
+      ) -> Chunk
+
+      # Build chunk ID from document ID, section index, and part index
+      def self.build_chunk_id: (String doc_id, Integer section_idx, Integer part_idx) -> String
+    end
+
+    # Loader class for knowledge base documents
+    class Loader
+      # Load all documents from corpus directory
+      def self.load_docs: (?String corpus_path) -> Array[Doc]
+    end
+
+    # Builder class for knowledge base
+    class Builder
+      # Build the knowledge base from a corpus directory
+      def self.run: (String corpus_path, ?String? db_path) -> void
+
+      # Convert date to string format for database storage
+      def self.format_date_for_db: (Date | String | nil date) -> String?
+
+      # Insert documents into database
+      def self.insert_docs: (SQLite3::Database db, Array[Doc] docs) -> void
+
+      # Insert unique tags into database
+      def self.insert_tags: (SQLite3::Database db, Array[Doc] docs) -> void
+
+      # Insert document-tag relationships into database
+      def self.insert_doc_tags: (SQLite3::Database db, Array[Doc] docs) -> void
+
+      # Insert chunks into database with comma-joined tags
+      def self.insert_chunks: (SQLite3::Database db, Array[Chunk] chunks) -> void
+    end
+
+    # Chunker class for splitting documents into chunks
+    class Chunker
+      TARGET_SIZE: Integer
+      MAX_SIZE: Integer
+
+      # Chunk documents into smaller pieces
+      def self.chunk_docs: (Array[Doc] docs) -> Array[Chunk]
+
+      # Chunk a single document
+      def self.chunk_doc: (Doc doc) -> Array[Chunk]
+
+      # Split document body by headings (# and ##)
+      def self.split_by_headings: (String body) -> Array[Hash[Symbol, String?]]
+
+      # Split text by size, respecting paragraph boundaries
+      def self.split_by_size: (String text, String? title) -> Array[String]
+
+      def self.handle_oversized: (String para, String current, Array[String] chunks) -> String
+
+      def self.should_split?: (String current, String para) -> bool
+
+      # Split an oversized paragraph by sentences or at word boundaries
+      def self.split_oversized_paragraph: (String paragraph) -> Array[String]
+
+      # Split text into paragraphs (double newline separated)
+      def self.split_into_paragraphs: (String text) -> Array[String]
+    end
   end
 end
