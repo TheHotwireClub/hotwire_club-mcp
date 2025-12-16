@@ -8,9 +8,8 @@
 /tmp/
 *~
 
-# Corpus and database files
+# Corpus files
 /corpus/
-/db/
 /.cursor/
 PROMPTS.md
 Gemfile.lock
