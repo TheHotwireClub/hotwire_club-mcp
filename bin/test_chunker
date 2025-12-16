@@ -35,6 +35,7 @@ if docs.any?
 
   first_doc_chunks.each_with_index do |chunk, i|
     puts "\n--- Chunk #{i + 1} (Position: #{chunk.position}) ---"
+    puts "ID: #{chunk.id}"
     puts "Title: #{chunk.title || '(no title)'}"
     puts "Category: #{chunk.category.inspect}"
     puts "Tags: #{chunk.tags.inspect}"
@@ -57,7 +58,7 @@ if docs.any?
         doc = docs[doc_index]
         puts "\nDocument: #{doc.title} (#{current_doc_chunks.length} chunks)"
         current_doc_chunks.each do |c|
-          puts "  Position #{c.position}: #{c.title || '(no title)'} (#{c.text.length} chars)"
+          puts "  Position #{c.position}: #{c.id} - #{c.title || '(no title)'} (#{c.text.length} chars)"
         end
       end
       doc_index += 1
@@ -71,7 +72,7 @@ if docs.any?
     doc = docs[doc_index]
     puts "\nDocument: #{doc.title} (#{current_doc_chunks.length} chunks)"
     current_doc_chunks.each do |c|
-      puts "  Position #{c.position}: #{c.title || '(no title)'} (#{c.text.length} chars)"
+      puts "  Position #{c.position}: #{c.id} - #{c.title || '(no title)'} (#{c.text.length} chars)"
     end
   end
 else
