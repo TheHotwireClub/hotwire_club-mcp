@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "sequel"
+require_relative "../database"
 
 module HotwireClub
   module MCP
@@ -10,14 +11,32 @@ module HotwireClub
       # This adapter wraps the ROM repositories and provides a clean interface
       # for searching chunks, listing documents, categories, and tags.
       class Adapter
-        # Initialize the adapter with a ROM container
+        # Initialize the adapter with a ROM container or database path
         #
-        # @param container [ROM::Container] ROM container instance
-        def initialize(container)
-          @container = container
-          @chunks_repo = ChunksRepo.new(container)
-          @docs_repo = DocsRepo.new(container)
-          @tags_repo = TagsRepo.new(container)
+        # Supports both positional and keyword arguments for backward compatibility:
+        # - Adapter.new(container) - positional container
+        # - Adapter.new(container: container) - keyword container
+        # - Adapter.new(db_path: "path") - keyword db_path
+        #
+        # @param args [Array] Positional arguments (container as first arg)
+        # @param kwargs [Hash] Keyword arguments (container: or db_path:)
+        def initialize(*args, **kwargs)
+          # Support both positional and keyword arguments for backward compatibility
+          if args.first.respond_to?(:relations)
+            # Positional container argument (backward compatible)
+            @container = args.first
+          elsif kwargs[:container]
+            # Keyword container argument
+            @container = kwargs[:container]
+          elsif kwargs[:db_path]
+            # Keyword db_path argument
+            @container = HotwireClub::MCP::Database.container(kwargs[:db_path])
+          else
+            raise ArgumentError, "Either container or db_path: must be provided"
+          end
+          @chunks_repo = ChunksRepo.new(@container)
+          @docs_repo = DocsRepo.new(@container)
+          @tags_repo = TagsRepo.new(@container)
         end
 
         # Search chunks using full-text search with optional filters

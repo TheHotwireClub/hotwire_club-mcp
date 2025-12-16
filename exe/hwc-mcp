@@ -3,3 +3,8 @@
 
 require "bundler/setup"
 require "hotwire_club/mcp"
+
+db_path = File.join(Dir.pwd, "db", "kb.sqlite")
+database = HotwireClub::MCP::Database::Adapter.new(db_path: db_path)
+server = HotwireClub::MCP::Server.new(adapter: database)
+server.run

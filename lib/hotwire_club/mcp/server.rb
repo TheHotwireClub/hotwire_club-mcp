@@ -13,12 +13,20 @@ module HotwireClub
     class Server
       # Initialize the MCP server
       #
-      # @param container [ROM::Container] ROM container instance
+      # @param container [ROM::Container, nil] ROM container instance
+      # @param adapter [Database::Adapter, nil] Database adapter instance
       # @param name [String] Server name (default: "hotwire-club-mcp")
       # @param version [String] Server version (default: HotwireClub::MCP::VERSION)
-      def initialize(container:, name: "hotwire-club-mcp", version: VERSION)
-        @container = container
-        @adapter = Database::Adapter.new(container)
+      def initialize(container: nil, adapter: nil, name: "hotwire-club-mcp", version: VERSION)
+        if adapter
+          @adapter = adapter
+          @container = adapter.instance_variable_get(:@container)
+        elsif container
+          @container = container
+          @adapter = Database::Adapter.new(container: container)
+        else
+          raise ArgumentError, "Either container: or adapter: must be provided"
+        end
         @fast_mcp_server = ::FastMcp::Server.new(name: name, version: version)
         register_tools
       end
@@ -31,6 +39,11 @@ module HotwireClub
       # Start the MCP server (delegates to FastMcp server)
       def start
         @fast_mcp_server.start
+      end
+
+      # Run the MCP server (alias for start to match pseudocode API)
+      def run
+        start
       end
 
       # Get all registered tools
