@@ -5,6 +5,8 @@ require "rom-sql"
 require "uri"
 require_relative "schema"
 
+# Files will be auto-loaded by auto_registration from database/relations/
+
 module HotwireClub
   module MCP
     # Database module for ROM container setup
@@ -22,6 +24,8 @@ module HotwireClub
         sqlite_uri = "sqlite:///#{encoded_path}"
 
         ROM.container(:sql, sqlite_uri) do |config|
+          # auto_registration expects files in subdirectories (relations/, mappers/, commands/)
+          # It will automatically require and register relation classes from database/relations/
           config.auto_registration(
             File.join(__dir__, "database"),
             namespace: "HotwireClub::MCP::Database",
