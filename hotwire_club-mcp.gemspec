@@ -31,7 +31,10 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "base64", "~> 0.2"
+  spec.add_dependency "fast-mcp", "~> 0.1"
   spec.add_dependency "front_matter_parser", "~> 1.0"
+  spec.add_dependency "rack", "~> 3.0"
   spec.add_dependency "rom", "~> 5.0"
   spec.add_dependency "rom-sql", "~> 3.0"
   spec.add_dependency "sqlite3", "~> 2.0"

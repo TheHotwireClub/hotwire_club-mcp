@@ -12,6 +12,8 @@ require_relative "mcp/database/repositories/tags_repo"
 require_relative "mcp/database/repositories/chunks_repo"
 require_relative "mcp/database/adapter"
 require_relative "mcp/builder"
+require_relative "mcp/server"
+require_relative "mcp/tools"
 
 module HotwireClub
   module MCP
