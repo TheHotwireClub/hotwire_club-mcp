@@ -31,6 +31,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "front_matter_parser", "~> 1.0"
+  spec.add_dependency "sqlite3", "~> 2.0"
 
   spec.add_development_dependency "minitest", "~> 5.16"
   spec.add_development_dependency "rubocop", "~> 1.0"
