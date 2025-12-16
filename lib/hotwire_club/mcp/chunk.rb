@@ -14,12 +14,7 @@ module HotwireClub
       # @param position [Integer] The position of the chunk within the document
       # @return [Chunk] A new Chunk instance with generated ID
       def self.create_from_section(doc:, section_idx:, part_idx:, section_title:, text:, position:)
-        chunk_id =
-          if part_idx.zero?
-            "#{doc.id}#s#{section_idx}"
-          else
-            "#{doc.id}#s#{section_idx}-#{part_idx}"
-          end
+        chunk_id = build_chunk_id(doc.id, section_idx, part_idx)
 
         new(
           id:       chunk_id,
@@ -30,6 +25,20 @@ module HotwireClub
           position: position,
           text:     text,
         )
+      end
+
+      # Build chunk ID from document ID, section index, and part index
+      #
+      # @param doc_id [String] Document ID
+      # @param section_idx [Integer] Section index
+      # @param part_idx [Integer] Part index
+      # @return [String] Chunk ID
+      def self.build_chunk_id(doc_id, section_idx, part_idx)
+        if part_idx.zero?
+          "#{doc_id}#s#{section_idx}"
+        else
+          "#{doc_id}#s#{section_idx}-#{part_idx}"
+        end
       end
     }
   end

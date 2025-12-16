@@ -6,6 +6,7 @@ require_relative "mcp/loader"
 require_relative "mcp/chunk"
 require_relative "mcp/chunker"
 require_relative "mcp/schema"
+require_relative "mcp/builder"
 
 module HotwireClub
   module MCP
