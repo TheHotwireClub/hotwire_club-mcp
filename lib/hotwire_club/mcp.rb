@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "fast_mcp"
+
 require_relative "mcp/version"
 require_relative "mcp/doc"
 require_relative "mcp/loader"
@@ -12,6 +14,8 @@ require_relative "mcp/database/repositories/tags_repo"
 require_relative "mcp/database/repositories/chunks_repo"
 require_relative "mcp/database/adapter"
 require_relative "mcp/builder"
+require_relative "mcp/server"
+require_relative "mcp/tools"
 
 module HotwireClub
   module MCP
