@@ -41,7 +41,7 @@ module HotwireClub
       docs = HotwireClub::MCP::Loader.load_docs(@corpus_dir)
 
       assert_equal 1, docs.length
-      assert_nil docs.first.id
+      assert_equal "ready-document", docs.first.id
       assert_equal "Ready Document", docs.first.title
       assert_nil docs.first.date
     end
@@ -72,7 +72,7 @@ module HotwireClub
       docs = HotwireClub::MCP::Loader.load_docs(@corpus_dir)
 
       assert_equal 1, docs.length
-      assert_nil docs.first.id
+      assert_equal "ready-document", docs.first.id
       assert_nil docs.first.date
     end
 
@@ -100,7 +100,7 @@ module HotwireClub
       assert_equal 1, docs.length
       doc = docs.first
 
-      assert_nil doc.id
+      assert_equal "test-document", doc.id
       assert_equal "Test Document", doc.title
       assert_equal Date.new(2023, 4, 25), doc.date
       assert_equal "Turbo Drive", doc.category
@@ -177,6 +177,7 @@ module HotwireClub
       docs = HotwireClub::MCP::Loader.load_docs(@corpus_dir)
 
       assert_equal 1, docs.length
+      assert_equal "no-title", docs.first.id
       assert_equal "no-title", docs.first.title
     end
 
@@ -282,6 +283,19 @@ module HotwireClub
       docs = HotwireClub::MCP::Loader.load_docs(@corpus_dir)
 
       assert_empty docs
+    end
+
+    def test_generates_id_from_title
+      assert_equal "test-document", HotwireClub::MCP::Doc.id_from_title("Test Document")
+      assert_equal "turbo-drive-custom-rendering", HotwireClub::MCP::Doc.id_from_title("Turbo Drive: Custom Rendering")
+      assert_equal "simple-title", HotwireClub::MCP::Doc.id_from_title("Simple Title")
+      assert_equal "with-special-chars", HotwireClub::MCP::Doc.id_from_title("With Special!@# Chars")
+      assert_equal "multiple-spaces", HotwireClub::MCP::Doc.id_from_title("Multiple    Spaces")
+      assert_equal "with-underscores", HotwireClub::MCP::Doc.id_from_title("With_Underscores")
+      assert_equal "trailing-hyphens", HotwireClub::MCP::Doc.id_from_title("---Trailing---Hyphens---")
+      assert_equal "mixed-case", HotwireClub::MCP::Doc.id_from_title("MiXeD cAsE")
+      assert_nil HotwireClub::MCP::Doc.id_from_title(nil)
+      assert_nil HotwireClub::MCP::Doc.id_from_title("")
     end
   end
 end

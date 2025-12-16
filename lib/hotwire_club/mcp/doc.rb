@@ -29,6 +29,22 @@ module HotwireClub
   module MCP
     # Data class representing a single document
     Doc = Data.define(:id, :title, :category, :tags, :body, :summary, :date) {
+      # Generate a stable document ID from a title
+      #
+      # @param title [String] The document title
+      # @return [String] A slugified version of the title suitable for use as an ID
+      def self.id_from_title(title)
+        return nil if title.nil? || title.empty?
+
+        # Convert to lowercase, replace spaces and underscores with hyphens,
+        # remove special characters (keep alphanumeric and hyphens), collapse multiple hyphens
+        title.downcase
+             .gsub(%r{[\s_]+}, "-")
+             .gsub(%r{[^a-z0-9-]}, "")
+             .gsub(%r{-+}, "-")
+             .gsub(%r{^-|-$}, "")
+      end
+
       def self.from_file(file_path)
         parsed = FrontMatterParser::Parser.parse_file(file_path)
         front_matter = parsed.front_matter
@@ -38,6 +54,9 @@ module HotwireClub
 
         # Infer title from front matter
         title = front_matter["title"] || File.basename(file_path, ".md")
+
+        # Generate ID from title
+        id = id_from_title(title)
 
         # Infer category from front matter (take first category or nil)
         category = front_matter["categories"]&.first || front_matter["category"]
@@ -55,7 +74,7 @@ module HotwireClub
         date = front_matter["date"]
 
         new(
-          id:       nil,
+          id:       id,
           title:    title,
           category: category,
           tags:     tags,
