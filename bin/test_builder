@@ -1,0 +1,86 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "hotwire_club/mcp"
+require "sqlite3"
+
+db_path = File.join(Dir.pwd, "db", "kb-test.sqlite3")
+corpus_path = File.join(Dir.pwd, "corpus")
+
+puts "Building knowledge base from corpus/..."
+puts "Database: #{db_path}"
+
+# Build the knowledge base
+HotwireClub::MCP::Builder.run(corpus_path, db_path)
+
+puts "\n=== Database Summary ==="
+
+db = SQLite3::Database.new(db_path)
+
+# Count records
+doc_count = db.execute("SELECT COUNT(*) FROM docs").first.first
+tag_count = db.execute("SELECT COUNT(*) FROM tags").first.first
+doc_tag_count = db.execute("SELECT COUNT(*) FROM doc_tags").first.first
+chunk_count = db.execute("SELECT COUNT(*) FROM chunks").first.first
+
+puts "Documents: #{doc_count}"
+puts "Tags: #{tag_count}"
+puts "Document-Tag relationships: #{doc_tag_count}"
+puts "Chunks: #{chunk_count}"
+
+if doc_count.positive?
+  puts "\n=== Sample Documents ==="
+  docs = db.execute("SELECT id, title, category, date FROM docs ORDER BY id LIMIT 3")
+  
+  docs.each_with_index do |doc, i|
+    id, title, category, date = doc
+    puts "\n#{i + 1}. #{title}"
+    puts "   ID: #{id}"
+    puts "   Category: #{category || '(none)'}"
+    puts "   Date: #{date || '(none)'}"
+  end
+
+  puts "\n=== Sample Tags ==="
+  tags = db.execute("SELECT name FROM tags ORDER BY name LIMIT 10")
+  
+  if tags.any?
+    puts "Tags: #{tags.map(&:first).join(', ')}"
+  else
+    puts "No tags found"
+  end
+
+  puts "\n=== Sample Chunks ==="
+  chunks = db.execute("SELECT chunk_id, doc_id, title, category, tags, position FROM chunks ORDER BY doc_id, position LIMIT 5")
+  
+  chunks.each_with_index do |chunk, i|
+    chunk_id, doc_id, title, category, tags, position = chunk
+    puts "\n#{i + 1}. Chunk: #{chunk_id}"
+    puts "   Document: #{doc_id}"
+    puts "   Title: #{title || '(no title)'}"
+    puts "   Category: #{category || '(none)'}"
+    puts "   Tags: #{tags || '(none)'}"
+    puts "   Position: #{position}"
+  end
+
+  puts "\n=== FTS Search Test ==="
+  # Test full-text search
+  search_term = "Render"
+  results = db.execute("SELECT chunk_id, doc_id, title FROM chunks WHERE chunks MATCH ? ORDER BY position LIMIT 3", [search_term])
+  
+  puts "Searching for '#{search_term}':"
+  if results.any?
+    results.each_with_index do |result, i|
+      chunk_id, doc_id, title = result
+      puts "  #{i + 1}. #{chunk_id} (#{doc_id}) - #{title || '(no title)'}"
+    end
+  else
+    puts "  No results found"
+  end
+else
+  puts "\nNo documents found. Make sure corpus/*.md files have 'ready: true' in front matter."
+end
+
+db.close
+
+puts "\n=== Done ==="
