@@ -23,15 +23,25 @@ module HotwireClub
       # @return [Array<Chunk>] Array of Chunk objects for this document
       def self.chunk_doc(doc)
         pos = -1
-        split_by_headings(doc.body).flat_map do |section|
-          split_by_size(section[:text], section[:title]).map do |chunk_text|
-            Chunk.new(
-              id: nil, doc_id: doc.id, title: section[:title],
-              category: doc.category, tags: doc.tags,
-              position: pos += 1, text: chunk_text
+        sections = split_by_headings(doc.body)
+        chunks = []
+
+        sections.each_with_index do |section, s_idx|
+          parts = split_by_size(section[:text], section[:title])
+
+          parts.each_with_index do |text, p_idx|
+            chunks << Chunk.create_from_section(
+              doc:           doc,
+              section_idx:   s_idx,
+              part_idx:      p_idx,
+              section_title: section[:title],
+              text:          text,
+              position:      pos += 1,
             )
           end
         end
+
+        chunks
       end
 
       # Split document body by headings (# and ##)
