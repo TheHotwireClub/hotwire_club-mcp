@@ -220,8 +220,7 @@ module HotwireClub
       assert_includes result.keys, "position"
       assert_includes result.keys, "score"
       assert_includes result.keys, "snippet"
-      assert_includes result.keys, "updated_at"
-      assert_includes result.keys, "url"
+      assert_includes result.keys, "date"
     end
 
     def test_search_finds_chunks_by_query
@@ -317,22 +316,30 @@ module HotwireClub
       assert result["snippet"].start_with?("Ruby is a dynamic") if result
     end
 
-    def test_search_returns_updated_at_from_doc
+    def test_search_returns_date_from_doc
 
       results = @adapter.search(query: "Ruby", limit: 10)
 
       assert_predicate results, :any?
-      # updated_at might be nil if docs table doesn't have this field yet
-      assert results.all? { |r| r["updated_at"].nil? || r["updated_at"].is_a?(Time) || r["updated_at"].is_a?(String) }
+      # date might be nil if doc doesn't have a date
+      date_valid = results.all? { |r|
+        r["date"].nil? || r["date"].is_a?(Time) || r["date"].is_a?(String) || r["date"].is_a?(Date)
+      }
+
+      assert date_valid
     end
 
-    def test_search_returns_url_from_doc
+    def test_search_returns_date_matches_doc_date
 
       results = @adapter.search(query: "Ruby", limit: 10)
 
-      assert_predicate results, :any?
-      # url might be nil if docs table doesn't have this field yet
-      assert results.all? { |r| r["url"].nil? || r["url"].is_a?(String) }
+      return if results.empty?
+
+      result = results.first
+      doc = @container.relations[:docs].where(id: result["doc_id"]).one
+      expected_date = doc[:date] || doc.date
+
+      assert_equal expected_date, result["date"]
     end
 
     def test_search_filters_by_category

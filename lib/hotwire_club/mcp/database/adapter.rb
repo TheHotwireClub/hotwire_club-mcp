@@ -35,8 +35,7 @@ module HotwireClub
         #   - position [Integer]
         #   - score [Numeric] FTS5 relevance score
         #   - snippet [String] First 400 characters of text
-        #   - updated_at [Time, String, nil] From doc (may be nil if field doesn't exist)
-        #   - url [String, nil] From doc (may be nil if field doesn't exist)
+        #   - date [Date, Time, String, nil] From doc (may be nil)
         def search(query:, category: nil, tags: nil, limit: 8)
           query = query.to_s.strip
           return [] if query.empty?
@@ -110,22 +109,20 @@ module HotwireClub
           doc_id = safe_get(row, :doc_id)
           text = safe_get(row, :text) || ""
 
-          # Get doc for updated_at and url (fields don't exist yet, so will be nil)
+          # Get doc for date field
           doc = get_doc(doc_id)
-          updated_at = safe_get_doc_field(doc, :updated_at)
-          url = safe_get_doc_field(doc, :url)
+          date = safe_get_doc_field(doc, :date)
 
           {
-            "chunk_id"   => chunk_id,
-            "doc_id"     => doc_id,
-            "title"      => safe_get(row, :title),
-            "category"   => safe_get(row, :category),
-            "tags"       => parse_tags(safe_get(row, :tags)),
-            "position"   => safe_get(row, :position),
-            "score"      => safe_get(row, :score) || 0.0,
-            "snippet"    => text[0, 400],
-            "updated_at" => updated_at,
-            "url"        => url,
+            "chunk_id" => chunk_id,
+            "doc_id"   => doc_id,
+            "title"    => safe_get(row, :title),
+            "category" => safe_get(row, :category),
+            "tags"     => parse_tags(safe_get(row, :tags)),
+            "position" => safe_get(row, :position),
+            "score"    => safe_get(row, :score) || 0.0,
+            "snippet"  => text[0, 400],
+            "date"     => date,
           }
         end
 
@@ -195,6 +192,22 @@ module HotwireClub
           @docs_repo.by_id(doc_id)
         end
 
+        # Format chunk result into hash
+        #
+        # @param chunk [Hash, ROM::Struct] Chunk object
+        # @return [Hash] Formatted chunk hash
+        def format_chunk_result(chunk)
+          {
+            "chunk_id" => safe_get(chunk, :chunk_id),
+            "doc_id"   => safe_get(chunk, :doc_id),
+            "title"    => safe_get(chunk, :title),
+            "category" => safe_get(chunk, :category),
+            "tags"     => parse_tags(safe_get(chunk, :tags)),
+            "position" => safe_get(chunk, :position),
+            "text"     => safe_get(chunk, :text),
+          }
+        end
+
         # Build the search dataset with filters and joins
         #
         # @param escaped_query [String] Escaped FTS5 query
@@ -248,22 +261,6 @@ module HotwireClub
         # @return [Sequel::Dataset] Dataset with join
         def add_docs_join(dataset)
           dataset.left_join(:docs, id: Sequel.qualify(:chunks, :doc_id))
-        end
-
-        # Format chunk result into hash
-        #
-        # @param chunk [Hash, ROM::Struct] Chunk object
-        # @return [Hash] Formatted chunk hash
-        def format_chunk_result(chunk)
-          {
-            "chunk_id" => safe_get(chunk, :chunk_id),
-            "doc_id"   => safe_get(chunk, :doc_id),
-            "title"    => safe_get(chunk, :title),
-            "category" => safe_get(chunk, :category),
-            "tags"     => parse_tags(safe_get(chunk, :tags)),
-            "position" => safe_get(chunk, :position),
-            "text"     => safe_get(chunk, :text),
-          }
         end
 
         # Apply tags filter to a dataset
