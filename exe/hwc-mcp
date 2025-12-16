@@ -1,7 +1,13 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require "bundler/setup"
+# Only use bundler/setup in development (when Gemfile exists in parent directory)
+# When installed as a gem, the Gemfile won't exist, so just require the gem directly
+gemfile_path = File.expand_path(File.join(__dir__, "..", "Gemfile"))
+if File.exist?(gemfile_path)
+  require "bundler/setup"
+end
+
 require "hotwire_club/mcp"
 
 db_path = File.join(Dir.pwd, "db", "kb.sqlite")

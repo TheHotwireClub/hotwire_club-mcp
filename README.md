@@ -1,28 +1,49 @@
 # HotwireClub::Mcp
 
-TODO: Delete this and the text below, and describe your gem
+MCP server for Hotwire Club knowledge base - provides search_hotwire_kb, list_kb_categories, list_kb_tags, and list_kb_docs tools/resources.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/hotwire_club/mcp`. To experiment with that code, run `bin/console` for an interactive prompt.
+A Model Context Protocol (MCP) server that provides access to the Hotwire Club knowledge base. Builds a searchable SQLite database from markdown documents and exposes MCP tools and resources for searching and browsing documentation, categories, tags, and documents.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+### As a Gem
 
-Install the gem and add to the application's Gemfile by executing:
+Install the gem:
 
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+gem install hotwire_club-mcp
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+**Important:** After installing, if you're using `rbenv`, you need to regenerate the shims so the `hwc-mcp` executable is available:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+rbenv rehash
+```
+
+If you encounter an error like "cannot rehash: /Users/username/.rbenv/shims/.rbenv-shim exists", remove the lock file and try again:
+
+```bash
+rm -f ~/.rbenv/shims/.rbenv-shim
+rbenv rehash
+```
+
+### With Bundler
+
+Add to your application's Gemfile:
+
+```bash
+bundle add hotwire_club-mcp
 ```
 
 ## Usage
 
-TODO: Write usage instructions here
+Run the MCP server:
+
+```bash
+hwc-mcp
+```
+
+The server will look for the database at `db/kb.sqlite` in the current working directory. Make sure you've built the knowledge base first (see Development section).
 
 ## Development
 
