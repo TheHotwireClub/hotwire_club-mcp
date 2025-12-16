@@ -8,7 +8,7 @@ module HotwireClub
       # Base class for all MCP tools
       #
       # Provides common functionality like adapter access for all tools.
-      class BaseTool < ::MCP::Tool
+      class BaseTool < ::FastMcp::Tool
         class << self
           attr_accessor :adapter
         end

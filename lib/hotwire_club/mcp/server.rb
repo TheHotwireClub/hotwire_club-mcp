@@ -9,7 +9,7 @@ module HotwireClub
     # MCP Server for Hotwire Club knowledge base
     #
     # This server provides MCP tools for searching and browsing the knowledge base.
-    # It wraps a MCP::Server and registers all the required tools.
+    # It wraps a FastMcp::Server and registers all the required tools.
     class Server
       # Initialize the MCP server
       #
@@ -19,16 +19,16 @@ module HotwireClub
       def initialize(container:, name: "hotwire-club-mcp", version: VERSION)
         @container = container
         @adapter = Database::Adapter.new(container)
-        @fast_mcp_server = ::MCP::Server.new(name: name, version: version)
+        @fast_mcp_server = ::FastMcp::Server.new(name: name, version: version)
         register_tools
       end
 
-      # Get the underlying MCP server instance
+      # Get the underlying FastMcp server instance
       #
-      # @return [MCP::Server] MCP server instance
+      # @return [FastMcp::Server] FastMcp server instance
       attr_reader :fast_mcp_server
 
-      # Start the MCP server (delegates to MCP server)
+      # Start the MCP server (delegates to FastMcp server)
       def start
         @fast_mcp_server.start
       end
