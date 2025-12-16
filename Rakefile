@@ -18,3 +18,6 @@ namespace :kb do
     puts "Knowledge base built successfully!"
   end
 end
+
+# Hook kb:build into the build task
+Rake::Task[:build].enhance(["kb:build"])
