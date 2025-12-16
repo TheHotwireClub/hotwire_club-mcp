@@ -27,6 +27,10 @@ Gem::Specification.new do |spec|
     end
   end
 
+  # Include the database file if it exists (even if not tracked in git)
+  db_path = File.join(__dir__, "db", "kb.sqlite")
+  spec.files << "db/kb.sqlite" if File.exist?(db_path)
+
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
