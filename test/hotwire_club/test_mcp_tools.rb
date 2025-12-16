@@ -705,18 +705,33 @@ module HotwireClub
       ]
 
       tools_to_test.each do |tool_class, args|
-        tool_class.adapter = @adapter
-        tool = tool_class.new
-        result = args ? tool.call(**args) : tool.call
-
-        # Verify result is JSON-serializable (basic check)
-        assert result.is_a?(Array) || result.is_a?(Hash) || result.nil?, "Result should be Array, Hash, or nil, got #{result.class}"
-        if result.is_a?(Array) && result.any?
-          first_item = result.first
-          # ROM structs respond to to_h and can be serialized
-          assert first_item.is_a?(Hash) || first_item.is_a?(String) || first_item.respond_to?(:to_h), "Array elements should be Hash, String, or respond to to_h, got #{first_item.class}"
-        end
+        verify_tool_result_format(tool_class, args)
       end
+    end
+
+    def verify_tool_result_format(tool_class, args)
+      tool_class.adapter = @adapter
+      tool = tool_class.new
+      result = if args
+                 tool.call(**args)
+               else
+                 tool.call
+               end
+
+      assert_valid_result_type(result)
+      assert_valid_array_elements(result) if result.is_a?(Array) && result.any?
+    end
+
+    def assert_valid_result_type(result)
+      assert result.is_a?(Array) || result.is_a?(Hash) || result.nil?,
+             "Result should be Array, Hash, or nil, got #{result.class}"
+    end
+
+    def assert_valid_array_elements(result)
+      first_item = result.first
+      # ROM structs respond to to_h and can be serialized
+      assert first_item.is_a?(Hash) || first_item.is_a?(String) || first_item.respond_to?(:to_h),
+             "Array elements should be Hash, String, or respond to to_h, got #{first_item.class}"
     end
   end
 end
