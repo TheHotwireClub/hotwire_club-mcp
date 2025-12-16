@@ -8,7 +8,7 @@ module HotwireClub
         #
         # @return [Array] Array of all documents
         def all
-          docs.to_a
+          container.relations[:docs].to_a
         end
 
         # Get a document by ID
@@ -16,7 +16,9 @@ module HotwireClub
         # @param id [String] Document ID
         # @return [Hash, ROM::Struct::Doc, nil] Document or nil if not found
         def by_id(id)
-          docs.where(id: id).one
+          return nil if id.nil? || id.empty?
+
+          container.relations[:docs].where(id: id).one
         end
 
         # List documents with optional filters
@@ -27,7 +29,7 @@ module HotwireClub
         # @param offset [Integer] Number of results to skip (default: 0)
         # @return [Array] Array of documents
         def list(category: nil, tags: [], limit: 20, offset: 0)
-          relation = docs
+          relation = container.relations[:docs]
           relation = relation.where(category: category) if category
           relation = apply_tags_filter(relation, tags) if tags.any?
           relation.limit(limit).offset(offset).to_a
@@ -37,7 +39,12 @@ module HotwireClub
         #
         # @return [Array<String>] Array of unique category names
         def categories
-          docs.select(:category).distinct.where { category.not(nil) }.map { |r| r[:category] }.uniq
+          container.relations[:docs]
+                   .select(:category)
+                   .distinct
+                   .where { category.not(nil) }
+                   .map { |r| r[:category] }
+                   .compact
         end
 
         # Find related documents based on category and tag overlap
@@ -56,23 +63,27 @@ module HotwireClub
           matching_doc_ids = find_matching_doc_ids(source_doc_id, source_info[:tags])
           return [] if matching_doc_ids.empty?
 
-          docs
-            .where(category: source_info[:category])
-            .where(id: matching_doc_ids)
-            .limit(limit)
-            .to_a
+          container.relations[:docs]
+                   .where(category: source_info[:category])
+                   .where(id: matching_doc_ids)
+                   .limit(limit)
+                   .to_a
         end
 
         private
 
         def apply_tags_filter(relation, tags)
-          doc_ids_with_all_tags = find_doc_ids_with_all_tags(tags)
-          return relation.where(id: doc_ids_with_all_tags) unless doc_ids_with_all_tags.empty?
+          return relation if tags.empty?
 
-          relation.where(id: [])
+          doc_ids_with_all_tags = find_doc_ids_with_all_tags(tags)
+          return relation.where(id: []) if doc_ids_with_all_tags.empty?
+
+          relation.where(id: doc_ids_with_all_tags)
         end
 
         def find_doc_ids_with_all_tags(tags)
+          return [] if tags.empty?
+
           doc_tags
             .where(tag: tags)
             .select(:doc_id)
@@ -82,7 +93,8 @@ module HotwireClub
         end
 
         def resolve_source_doc_id(doc_id, chunk_id)
-          return doc_id unless chunk_id
+          return doc_id if doc_id && !chunk_id
+          return nil if chunk_id.nil?
 
           chunk = chunks.where(chunk_id: chunk_id).one
           return nil unless chunk
@@ -91,11 +103,11 @@ module HotwireClub
         end
 
         def get_source_doc_info(source_doc_id)
-          source_doc = docs.where(id: source_doc_id).one
+          source_doc = container.relations[:docs].where(id: source_doc_id).one
           return nil unless source_doc
 
           source_category = source_doc[:category] || source_doc.category
-          source_tags = doc_tags.where(doc_id: source_doc_id).map { |r| r[:tag] }
+          source_tags = doc_tags.where(doc_id: source_doc_id).map { |r| r[:tag] }.compact
 
           return nil if source_category.nil? || source_tags.empty?
 
@@ -103,6 +115,8 @@ module HotwireClub
         end
 
         def find_matching_doc_ids(source_doc_id, source_tags)
+          return [] if source_tags.empty?
+
           doc_tags
             .where(tag: source_tags)
             .select(:doc_id)
