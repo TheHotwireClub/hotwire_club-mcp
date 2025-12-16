@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "fast_mcp"
+
 require_relative "mcp/version"
 require_relative "mcp/doc"
 require_relative "mcp/loader"
