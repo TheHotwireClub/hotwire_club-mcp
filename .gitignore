@@ -7,3 +7,10 @@
 /spec/reports/
 /tmp/
 *~
+
+# Corpus and database files
+/corpus/
+/db/
+/.cursor/
+PROMPTS.md
+Gemfile.lock
