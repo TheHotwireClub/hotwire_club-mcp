@@ -10,6 +10,7 @@ require_relative "mcp/database"
 require_relative "mcp/database/repositories/docs_repo"
 require_relative "mcp/database/repositories/tags_repo"
 require_relative "mcp/database/repositories/chunks_repo"
+require_relative "mcp/database/adapter"
 require_relative "mcp/builder"
 
 module HotwireClub
@@ -23,3 +24,4 @@ end
 DocsRepo = HotwireClub::MCP::Database::DocsRepo
 TagsRepo = HotwireClub::MCP::Database::TagsRepo
 ChunksRepo = HotwireClub::MCP::Database::ChunksRepo
+Adapter = HotwireClub::MCP::Database::Adapter

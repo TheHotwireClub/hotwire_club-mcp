@@ -1,0 +1,201 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "hotwire_club/mcp"
+
+db_path = File.join(Dir.pwd, "db", "kb-test.sqlite3")
+corpus_path = File.join(Dir.pwd, "corpus")
+
+# Build the knowledge base if it doesn't exist or is empty
+unless File.exist?(db_path) && File.size(db_path).positive?
+  puts "Building knowledge base from corpus/..."
+  puts "Database: #{db_path}"
+  HotwireClub::MCP::Builder.run(corpus_path, db_path)
+  puts "Done!\n\n"
+end
+
+# Create adapter
+container = HotwireClub::MCP::Database.container(db_path)
+adapter = HotwireClub::MCP::Database::Adapter.new(container)
+
+puts "=== Database Adapter Test ==="
+puts "Database: #{db_path}\n\n"
+
+# Test search
+puts "=== Search Functionality ==="
+search_queries = ["Ruby", "Rails", "programming", "framework"]
+
+search_queries.each do |query|
+  puts "\nSearching for: '#{query}'"
+  results = adapter.search(query: query, limit: 3)
+
+  if results.any?
+    puts "Found #{results.length} result(s):"
+    results.each_with_index do |result, i|
+      puts "\n  #{i + 1}. #{result['title'] || '(no title)'}"
+      puts "     Chunk ID: #{result['chunk_id']}"
+      puts "     Doc ID: #{result['doc_id']}"
+      puts "     Category: #{result['category'] || '(none)'}"
+      puts "     Tags: #{result['tags'].join(', ') || '(none)'}"
+      puts "     Position: #{result['position']}"
+      puts "     Score: #{result['score'].round(4)}"
+      puts "     Date: #{result['date'] || '(none)'}"
+      puts "     Snippet: #{result['snippet'][0, 100]}..."
+    end
+  else
+    puts "  No results found"
+  end
+end
+
+# Test search with filters
+puts "\n\n=== Search with Filters ==="
+puts "\nSearching for 'language' with category='programming':"
+results = adapter.search(query: "language", category: "programming", limit: 3)
+puts "Found #{results.length} result(s)"
+
+if results.any?
+  results.each_with_index do |result, i|
+    puts "  #{i + 1}. #{result['title'] || '(no title)'} (#{result['doc_id']})"
+  end
+end
+
+puts "\nSearching for 'framework' with tags=['ruby', 'rails']:"
+results = adapter.search(query: "framework", tags: ["ruby", "rails"], limit: 3)
+puts "Found #{results.length} result(s)"
+
+if results.any?
+  results.each_with_index do |result, i|
+    puts "  #{i + 1}. #{result['title'] || '(no title)'} (#{result['doc_id']})"
+    puts "     Tags: #{result['tags'].join(', ')}"
+  end
+end
+
+# Test get_chunk
+puts "\n\n=== Get Chunk ==="
+# Get a chunk ID from search results (try multiple queries)
+chunk_id = nil
+["Rails", "Turbo", "Frame"].each do |query|
+  results = adapter.search(query: query, limit: 1)
+  if results.any?
+    chunk_id = results.first["chunk_id"]
+    break
+  end
+end
+
+if chunk_id
+  puts "\nGetting chunk: #{chunk_id}"
+  chunk = adapter.get_chunk(chunk_id: chunk_id)
+
+  if chunk
+    puts "  Chunk ID: #{chunk['chunk_id']}"
+    puts "  Doc ID: #{chunk['doc_id']}"
+    puts "  Title: #{chunk['title'] || '(no title)'}"
+    puts "  Category: #{chunk['category'] || '(none)'}"
+    puts "  Tags: #{chunk['tags'].join(', ') || '(none)'}"
+    puts "  Position: #{chunk['position']}"
+    puts "  Text length: #{chunk['text'].length} characters"
+    puts "  Text preview (first 200 chars):"
+    puts "  #{chunk['text'][0, 200]}..."
+  else
+    puts "  Chunk not found"
+  end
+else
+  puts "No chunks available to test get_chunk (try building the knowledge base first)"
+end
+
+# Test list_categories
+puts "\n\n=== List Categories ==="
+categories = adapter.list_categories
+puts "Found #{categories.length} category(ies):"
+categories.each do |category|
+  puts "  - #{category}"
+end
+
+# Test list_tags
+puts "\n\n=== List Tags ==="
+tags = adapter.list_tags
+puts "Found #{tags.length} tag(s):"
+tags.each do |tag|
+  puts "  - #{tag}"
+end
+
+# Test list_docs
+puts "\n\n=== List Documents ==="
+puts "\nAll documents (limit: 5):"
+docs = adapter.list_docs(limit: 5)
+puts "Found #{docs.length} document(s):"
+docs.each_with_index do |doc, i|
+  doc_id = doc[:id] || doc.id
+  title = doc[:title] || doc.title
+  category = doc[:category] || doc.category
+  puts "  #{i + 1}. #{title} (#{doc_id})"
+  puts "     Category: #{category || '(none)'}"
+end
+
+puts "\nDocuments with category='programming' (limit: 3):"
+docs = adapter.list_docs(category: "programming", limit: 3)
+puts "Found #{docs.length} document(s):"
+docs.each_with_index do |doc, i|
+  doc_id = doc[:id] || doc.id
+  title = doc[:title] || doc.title
+  puts "  #{i + 1}. #{title} (#{doc_id})"
+end
+
+puts "\nDocuments with tags=['ruby'] (limit: 3):"
+docs = adapter.list_docs(tags: ["ruby"], limit: 3)
+puts "Found #{docs.length} document(s):"
+docs.each_with_index do |doc, i|
+  doc_id = doc[:id] || doc.id
+  title = doc[:title] || doc.title
+  puts "  #{i + 1}. #{title} (#{doc_id})"
+end
+
+# Test related_docs
+puts "\n\n=== Related Documents ==="
+# Get a doc_id from list_docs if search didn't return results
+all_docs = adapter.list_docs(limit: 10)
+if all_docs.any?
+  doc = all_docs.first
+  doc_id = doc[:id] || doc.id
+  title = doc[:title] || doc.title
+
+  puts "\nFinding documents related to doc_id: #{doc_id} (#{title})"
+  related = adapter.related_docs(doc_id: doc_id, limit: 5)
+
+  if related.any?
+    puts "Found #{related.length} related document(s):"
+    related.each_with_index do |related_doc, i|
+      related_id = related_doc[:id] || related_doc.id
+      related_title = related_doc[:title] || related_doc.title
+      category = related_doc[:category] || related_doc.category
+      puts "  #{i + 1}. #{related_title} (#{related_id})"
+      puts "     Category: #{category || '(none)'}"
+    end
+  else
+    puts "  No related documents found (doc may not have category/tags or no other docs share them)"
+  end
+
+  # Test with chunk_id - try to find a chunk
+  chunk_search_results = adapter.search(query: "Turbo", limit: 1)
+  if chunk_search_results.any?
+    chunk_id = chunk_search_results.first["chunk_id"]
+    puts "\nFinding documents related to chunk_id: #{chunk_id}"
+    related = adapter.related_docs(chunk_id: chunk_id, limit: 5)
+
+    if related.any?
+      puts "Found #{related.length} related document(s):"
+      related.each_with_index do |related_doc, i|
+        related_id = related_doc[:id] || related_doc.id
+        related_title = related_doc[:title] || related_doc.title
+        puts "  #{i + 1}. #{related_title} (#{related_id})"
+      end
+    else
+      puts "  No related documents found"
+    end
+  end
+else
+  puts "No documents available to test related_docs"
+end
+
+puts "\n=== Done ==="
