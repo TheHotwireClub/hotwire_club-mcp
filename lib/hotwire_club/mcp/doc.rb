@@ -52,25 +52,12 @@ module HotwireClub
         # Only process files with ready: true
         return nil unless front_matter["ready"] == true
 
-        # Infer title from front matter
-        title = front_matter["title"] || File.basename(file_path, ".md")
-
-        # Generate ID from title
+        title = extract_title(front_matter, file_path)
         id = id_from_title(title)
-
-        # Infer category from front matter (take first category or nil)
-        category = front_matter["categories"]&.first || front_matter["category"]
-
-        # Normalize tags to Array
+        category = extract_category(front_matter)
         tags = Array(front_matter["tags"])
-
-        # Body is the content after front matter
         body = parsed.content
-
-        # Summary can be from description or first paragraph
-        summary = front_matter["description"] || body.split("\n\n").first
-
-        # Extract date from front matter
+        summary = extract_summary(front_matter, body)
         date = front_matter["date"]
 
         new(
@@ -82,6 +69,32 @@ module HotwireClub
           summary:  summary,
           date:     date,
         )
+      end
+
+      # Extract title from front matter or filename
+      #
+      # @param front_matter [Hash] Front matter hash
+      # @param file_path [String] File path
+      # @return [String] Document title
+      def self.extract_title(front_matter, file_path)
+        front_matter["title"] || File.basename(file_path, ".md")
+      end
+
+      # Extract category from front matter
+      #
+      # @param front_matter [Hash] Front matter hash
+      # @return [String, nil] Category or nil
+      def self.extract_category(front_matter)
+        front_matter["categories"]&.first || front_matter["category"]
+      end
+
+      # Extract summary from front matter or body
+      #
+      # @param front_matter [Hash] Front matter hash
+      # @param body [String] Document body
+      # @return [String] Summary text
+      def self.extract_summary(front_matter, body)
+        front_matter["description"] || body.split("\n\n").first
       end
     }
   end
