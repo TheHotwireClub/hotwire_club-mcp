@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "front_matter_parser"
 require "date"
 require "psych"
 
@@ -46,6 +45,7 @@ module HotwireClub
       end
 
       def self.from_file(file_path)
+        require "front_matter_parser"
         parsed = FrontMatterParser::Parser.parse_file(file_path)
         front_matter = parsed.front_matter
 
