@@ -6,15 +6,13 @@ A Model Context Protocol (MCP) server that provides access to the Hotwire Club k
 
 ## Installation
 
-### As a Gem
-
 Install the gem:
 
 ```bash
 gem install hotwire_club-mcp
 ```
 
-**Important:** After installing, if you're using `rbenv`, you need to regenerate the shims so the `hwc-mcp` executable is available:
+**Important:** After installing, if you're using `rbenv`, you might need to regenerate the shims so the `hwc-mcp` executable is available:
 
 ```bash
 rbenv rehash
@@ -27,14 +25,6 @@ rm -f ~/.rbenv/shims/.rbenv-shim
 rbenv rehash
 ```
 
-### With Bundler
-
-Add to your application's Gemfile:
-
-```bash
-bundle add hotwire_club-mcp
-```
-
 ## Usage
 
 Run the MCP server:
@@ -43,7 +33,33 @@ Run the MCP server:
 hwc-mcp
 ```
 
-The server will look for the database at `db/kb.sqlite` in the current working directory. Make sure you've built the knowledge base first (see Development section).
+### Configuration
+
+#### Claude
+
+```json
+{
+  "mcpServers": {
+    "hotwire-club-mcp": {
+      "command": "hwc-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+#### Cursor
+
+```json
+{
+  "mcpServers": {
+    "hotwire-club-mcp": {
+      "command": "hwc-mcp",
+      "args": []
+    }
+  }
+}
+```
 
 ## Development
 
