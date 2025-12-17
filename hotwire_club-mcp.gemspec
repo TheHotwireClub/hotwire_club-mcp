@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors = ["Julian Rubisch"]
   spec.email = ["julian@julianrubisch.at"]
 
-  spec.summary = "MCP server for Hotwire Club knowledge base - provides search_hotwire_kb, list_kb_categories, list_kb_tags, and list_kb_docs tools/resources"
+  spec.summary = "MCP server for Hotwire Club knowledge base - provides tools for searching, browsing, and discovering documentation"
   spec.description = "A Model Context Protocol (MCP) server that provides access to the Hotwire Club knowledge base. Builds a searchable SQLite database from markdown documents and exposes MCP tools and resources for searching and browsing documentation, categories, tags, and documents."
   spec.homepage = "https://github.com/julianrubisch/hotwire_club-mcp"
   spec.required_ruby_version = ">= 3.1.0"

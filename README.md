@@ -1,8 +1,21 @@
 # HotwireClub::Mcp
 
-MCP server for Hotwire Club knowledge base - provides search_hotwire_kb, list_kb_categories, list_kb_tags, and list_kb_docs tools/resources.
+MCP server for Hotwire Club knowledge base - provides tools for searching, browsing, and discovering documentation from the Hotwire Club knowledge base.
 
-A Model Context Protocol (MCP) server that provides access to the Hotwire Club knowledge base. Builds a searchable SQLite database from markdown documents and exposes MCP tools and resources for searching and browsing documentation, categories, tags, and documents.
+A Model Context Protocol (MCP) server that provides access to the Hotwire Club knowledge base. Builds a searchable SQLite database from markdown documents and exposes MCP tools for searching and browsing documentation, categories, tags, and documents.
+
+## Features
+
+The server provides the following MCP tools:
+
+- **SearchHwcKbTool** - Search the knowledge base for chunks matching a query with optional category and tag filters
+- **GetHwcKbChunkTool** - Retrieve a single knowledge base chunk by its chunk_id
+- **ListHwcKbCategoriesTool** - List all unique categories available in the knowledge base
+- **ListHwcKbTagsTool** - List all tags available in the knowledge base
+- **ListHwcKbDocsTool** - List documents with optional filtering by category and tags, with pagination support
+- **RelatedHwcKbDocsTool** - Find documents related to a given document or chunk based on shared categories and tags
+
+The knowledge base is pre-built and included in the gem, so no additional setup is required after installation.
 
 ## Installation
 
@@ -25,6 +38,11 @@ rm -f ~/.rbenv/shims/.rbenv-shim
 rbenv rehash
 ```
 
+## Requirements
+
+- Ruby 3.1.0 or higher
+- SQLite3
+
 ## Usage
 
 Run the MCP server:
@@ -32,6 +50,8 @@ Run the MCP server:
 ```bash
 hwc-mcp
 ```
+
+The server uses a pre-built SQLite database (`db/kb.sqlite`) that is included with the gem. No additional configuration or database setup is required.
 
 ### Configuration
 
