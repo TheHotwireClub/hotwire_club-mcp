@@ -1,8 +1,8 @@
 # HotwireClub::Mcp
 
-MCP server for Hotwire Club knowledge base - provides tools for searching, browsing, and discovering documentation from the Hotwire Club knowledge base.
+MCP server for [the Hotwire Club knowledge base](https://hotwire.club/) - provides tools for searching, browsing, and discovering documentation from the Hotwire Club knowledge base.
 
-A Model Context Protocol (MCP) server that provides access to the Hotwire Club knowledge base. Builds a searchable SQLite database from markdown documents and exposes MCP tools for searching and browsing documentation, categories, tags, and documents.
+Builds a searchable SQLite database from markdown documents and exposes MCP tools for searching and browsing documentation, categories, tags, and documents.
 
 ## Features
 
