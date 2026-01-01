@@ -40,7 +40,7 @@ namespace :build do
 
     # Read the original gemspec
     original_gemspec = File.read("hotwire_club-mcp.gemspec")
-    pro_gemspec_content = original_gemspec.gsub(/spec\.name = "hotwire_club-mcp"/, 'spec.name = "hotwire_club-mcp-pro"')
+    pro_gemspec_content = original_gemspec.gsub('spec.name = "hotwire_club-mcp"', 'spec.name = "hotwire_club-mcp-pro"')
 
     begin
       # Temporarily write the modified gemspec
