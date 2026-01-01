@@ -13,11 +13,16 @@ require "hotwire_club/mcp"
 # Find the database path:
 # 1. In development: look in current directory's db/ folder
 # 2. When installed as gem: look in gem's installation directory
+# Uses best-effort approach: prefers kb-pro.sqlite, falls back to kb.sqlite
 def find_database_path
   # Check if we're in development (Gemfile exists)
   gemfile_path = File.expand_path(File.join(__dir__, "..", "Gemfile"))
   if File.exist?(gemfile_path)
     # Development: use current directory
+    # Try pro database first, then fall back to free
+    dev_pro_db_path = File.join(Dir.pwd, "db", "kb-pro.sqlite")
+    return dev_pro_db_path if File.exist?(dev_pro_db_path)
+
     dev_db_path = File.join(Dir.pwd, "db", "kb.sqlite")
     return dev_db_path if File.exist?(dev_db_path)
   end
@@ -25,10 +30,18 @@ def find_database_path
   # Installed as gem: find gem root directory
   # The executable is in exe/, so go up to gem root
   gem_root = File.expand_path(File.join(__dir__, ".."))
+  # Try pro database first, then fall back to free
+  gem_pro_db_path = File.join(gem_root, "db", "kb-pro.sqlite")
+  return gem_pro_db_path if File.exist?(gem_pro_db_path)
+
   gem_db_path = File.join(gem_root, "db", "kb.sqlite")
   return gem_db_path if File.exist?(gem_db_path)
 
   # Fallback to current directory (for backward compatibility)
+  # Try pro first, then free
+  fallback_pro_path = File.join(Dir.pwd, "db", "kb-pro.sqlite")
+  return fallback_pro_path if File.exist?(fallback_pro_path)
+
   File.join(Dir.pwd, "db", "kb.sqlite")
 end
 

@@ -15,7 +15,7 @@ namespace :kb do
     task :pro do
       require_relative "lib/hotwire_club/mcp"
 
-      HotwireClub::MCP::ProBuilder.run("corpus", "db/kb.sqlite")
+      HotwireClub::MCP::ProBuilder.run("corpus", "db/kb-pro.sqlite")
       puts "Knowledge base built successfully with all ready documents!"
     end
 
@@ -32,6 +32,7 @@ end
 # Hook kb:build:free into the build task (for releases)
 Rake::Task[:build].enhance(["kb:build:free"])
 
+# rubocop:disable Metrics/BlockLength
 namespace :build do
   desc "Build the knowledge base with all ready documents (pro + free) and then build the gem with -pro suffix"
   task pro: ["kb:build:pro"] do
@@ -48,8 +49,22 @@ namespace :build do
 
       # Read original and create modified version
       original_gemspec = File.read(original_gemspec_path)
+      # Replace the spec.files line to exclude free db and include pro db
+      # Do this last to avoid the general replacement affecting our replacement string
       pro_gemspec_content = original_gemspec.gsub('spec.name = "hotwire_club-mcp"',
                                                   'spec.name = "hotwire_club-mcp-pro"')
+                                            .gsub('"db", "kb.sqlite"', '"db", "kb-pro.sqlite"')
+                                            .gsub('"db/kb.sqlite"', '"db/kb-pro.sqlite"')
+                                            .gsub(
+                                              'spec.files << "db/kb-pro.sqlite" if File.exist?(db_path)',
+                                              "spec.files.reject! { |f| f == \"db/kb.sqlite\" }\n  " \
+                                              "spec.files << \"db/kb-pro.sqlite\" if File.exist?(db_path)",
+                                            )
+
+      # Verify replacement worked
+      unless pro_gemspec_content.include?('"db", "kb-pro.sqlite"') && pro_gemspec_content.include?('"db/kb-pro.sqlite"')
+        raise "Failed to replace database paths in gemspec"
+      end
 
       # Write modified version to temp file, then move it to original location
       File.write(temp_gemspec_path, pro_gemspec_content)
@@ -66,3 +81,4 @@ namespace :build do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength
