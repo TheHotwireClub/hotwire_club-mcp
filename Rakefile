@@ -32,6 +32,7 @@ end
 # Hook kb:build:free into the build task (for releases)
 Rake::Task[:build].enhance(["kb:build:free"])
 
+# rubocop:disable Metrics/BlockLength
 namespace :build do
   desc "Build the knowledge base with all ready documents (pro + free) and then build the gem with -pro suffix"
   task pro: ["kb:build:pro"] do
@@ -52,9 +53,13 @@ namespace :build do
                                                   'spec.name = "hotwire_club-mcp-pro"')
                                             .gsub('"db", "kb.sqlite"', '"db", "kb-pro.sqlite"')
                                             .gsub('"db/kb.sqlite"', '"db/kb-pro.sqlite"')
-                                            # Explicitly remove free database file from spec.files (in case it's tracked in git)
-                                            .gsub(/spec\.files << "db\/kb-pro\.sqlite" if File\.exist\?\(db_path\)\n/,
-                                                  "spec.files.reject! { |f| f == \"db/kb.sqlite\" }\n  spec.files << \"db/kb-pro.sqlite\" if File.exist?(db_path)\n")
+                                            # Explicitly remove free database file from spec.files
+                                            # (in case it's tracked in git)
+                                            .gsub(
+                                              'spec.files << "db/kb-pro.sqlite" if File.exist?(db_path)\n',
+                                              "spec.files.reject! { |f| f == \"db/kb.sqlite\" }\n  " \
+                                              "spec.files << \"db/kb-pro.sqlite\" if File.exist?(db_path)\n",
+                                            )
 
       # Verify replacement worked
       unless pro_gemspec_content.include?('"db", "kb-pro.sqlite"') && pro_gemspec_content.include?('"db/kb-pro.sqlite"')
@@ -76,3 +81,4 @@ namespace :build do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength
