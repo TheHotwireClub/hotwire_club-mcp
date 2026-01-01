@@ -40,7 +40,7 @@ rbenv rehash
 
 ## Requirements
 
-- Ruby 3.1.0 or higher
+- Ruby 3.2.0 or higher
 - SQLite3
 
 ## Usage
