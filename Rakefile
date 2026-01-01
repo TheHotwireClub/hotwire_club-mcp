@@ -36,6 +36,7 @@ namespace :build do
   desc "Build the knowledge base with all ready documents (pro + free) and then build the gem with -pro suffix"
   task pro: ["kb:build:pro"] do
     require "rubygems/package"
+    require "fileutils"
 
     # Load the gemspec and modify the name for pro version
     spec = Gem::Specification.load("hotwire_club-mcp.gemspec")
@@ -44,6 +45,11 @@ namespace :build do
 
     # Build the gem package
     gem_file = Gem::Package.build(spec)
-    puts "Built: #{gem_file}"
+
+    # Ensure pkg directory exists and move the gem there
+    FileUtils.mkdir_p("pkg")
+    pkg_path = File.join("pkg", gem_file)
+    FileUtils.mv(gem_file, pkg_path) if File.exist?(gem_file)
+    puts "Built: #{pkg_path}"
   end
 end
