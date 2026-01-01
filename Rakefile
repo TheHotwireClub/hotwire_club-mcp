@@ -15,7 +15,7 @@ namespace :kb do
     task :pro do
       require_relative "lib/hotwire_club/mcp"
 
-      HotwireClub::MCP::Builder.run("corpus", "db/kb.sqlite", free_only: false)
+      HotwireClub::MCP::ProBuilder.run("corpus", "db/kb.sqlite")
       puts "Knowledge base built successfully with all ready documents!"
     end
 
@@ -23,7 +23,7 @@ namespace :kb do
     task :free do
       require_relative "lib/hotwire_club/mcp"
 
-      HotwireClub::MCP::Builder.run("corpus", "db/kb.sqlite", free_only: true)
+      HotwireClub::MCP::FreeBuilder.run("corpus", "db/kb.sqlite")
       puts "Knowledge base built successfully with free documents only!"
     end
   end

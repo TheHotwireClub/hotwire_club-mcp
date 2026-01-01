@@ -321,14 +321,14 @@ module HotwireClub
         This document has no free flag.
       MARKDOWN
 
-      docs = HotwireClub::MCP::Loader.load_docs(@corpus_dir, free_only: true)
+      docs = HotwireClub::MCP::FreeLoader.load_docs(@corpus_dir)
 
       assert_equal 1, docs.length
       assert_equal "free-document", docs.first.id
       assert_equal "Free Document", docs.first.title
     end
 
-    def test_includes_all_ready_documents_when_free_only_false
+    def test_includes_all_ready_documents_when_using_pro_loader
       # Create a file with ready: true but free: false
       file_not_free = File.join(@corpus_dir, "not-free.md")
       File.write(file_not_free, <<~MARKDOWN)
@@ -364,7 +364,7 @@ module HotwireClub
         This document has no free flag.
       MARKDOWN
 
-      docs = HotwireClub::MCP::Loader.load_docs(@corpus_dir, free_only: false)
+      docs = HotwireClub::MCP::ProLoader.load_docs(@corpus_dir)
 
       assert_equal 3, docs.length
       doc_ids = docs.map(&:id).sort
@@ -372,7 +372,7 @@ module HotwireClub
       assert_equal ["free-document", "no-free-flag-document", "not-free-document"], doc_ids
     end
 
-    def test_includes_all_ready_documents_when_free_only_not_specified
+    def test_includes_all_ready_documents_when_using_base_loader
       # Create a file with ready: true but free: false
       file_not_free = File.join(@corpus_dir, "not-free.md")
       File.write(file_not_free, <<~MARKDOWN)
@@ -441,7 +441,7 @@ module HotwireClub
         This document is ready and free.
       MARKDOWN
 
-      docs = HotwireClub::MCP::Loader.load_docs(@corpus_dir, free_only: true)
+      docs = HotwireClub::MCP::FreeLoader.load_docs(@corpus_dir)
 
       assert_equal 1, docs.length
       assert_equal "ready-and-free-document", docs.first.id

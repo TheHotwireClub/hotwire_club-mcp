@@ -275,10 +275,10 @@ module HotwireClub
       assert_equal 0, chunk_count, "Should have 0 chunks"
     end
 
-    def test_run_filters_free_documents_when_free_only_true
+    def test_run_filters_free_documents_when_using_free_builder
       create_mixed_docs
 
-      HotwireClub::MCP::Builder.run(@corpus_dir, @db_path, free_only: true)
+      HotwireClub::MCP::FreeBuilder.run(@corpus_dir, @db_path)
 
       db = SQLite3::Database.new(@db_path)
       docs = db.execute("SELECT id, title FROM docs ORDER BY id")
@@ -290,10 +290,10 @@ module HotwireClub
       assert_equal ["free-document-one", "free-document-two"], doc_ids
     end
 
-    def test_run_includes_all_ready_documents_when_free_only_false
+    def test_run_includes_all_ready_documents_when_using_pro_builder
       create_mixed_docs
 
-      HotwireClub::MCP::Builder.run(@corpus_dir, @db_path, free_only: false)
+      HotwireClub::MCP::ProBuilder.run(@corpus_dir, @db_path)
 
       db = SQLite3::Database.new(@db_path)
       docs = db.execute("SELECT id, title FROM docs ORDER BY id")
@@ -305,7 +305,7 @@ module HotwireClub
       assert_equal ["free-document-one", "free-document-two", "no-free-flag-document", "not-free-document"], doc_ids
     end
 
-    def test_run_includes_all_ready_documents_when_free_only_not_specified
+    def test_run_includes_all_ready_documents_when_using_base_builder
       create_mixed_docs
 
       HotwireClub::MCP::Builder.run(@corpus_dir, @db_path)
@@ -345,7 +345,7 @@ module HotwireClub
         This document is ready and free.
       MARKDOWN
 
-      HotwireClub::MCP::Builder.run(@corpus_dir, @db_path, free_only: true)
+      HotwireClub::MCP::FreeBuilder.run(@corpus_dir, @db_path)
 
       db = SQLite3::Database.new(@db_path)
       docs = db.execute("SELECT id, title FROM docs ORDER BY id")

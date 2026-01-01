@@ -14,16 +14,14 @@ module HotwireClub
       #
       # @param corpus_path [String] Path to the corpus directory
       # @param db_path [String, nil] Optional database path (defaults to Schema::DB_PATH)
-      # @param free_only [Boolean, nil] If true, only build documents with free: true.
-      #   If false or nil, build all ready documents.
-      def self.run(corpus_path, db_path = nil, free_only: nil)
+      def self.run(corpus_path, db_path = nil)
         db_path ||= Schema::DB_PATH
 
         # 1. Create fresh database
         Schema.create!(db_path)
 
         # 2. Load documents
-        docs = Loader.load_docs(corpus_path, free_only: free_only)
+        docs = loader_class.load_docs(corpus_path)
 
         # 3. Chunk documents
         chunks = Chunker.chunk_docs(docs)
@@ -39,6 +37,13 @@ module HotwireClub
         end
 
         db.close
+      end
+
+      # Get the loader class to use for this builder
+      #
+      # @return [Class] The loader class
+      def self.loader_class
+        Loader
       end
 
       # Convert date to string format for database storage
@@ -111,6 +116,26 @@ module HotwireClub
             [chunk.id, chunk.doc_id, chunk.title, chunk.text, chunk.category, comma_joined_tags, chunk.position],
           )
         end
+      end
+    end
+
+    # Builder for free documents only
+    class FreeBuilder < Builder
+      # Get the loader class to use for this builder
+      #
+      # @return [Class] The FreeLoader class
+      def self.loader_class
+        FreeLoader
+      end
+    end
+
+    # Builder for all ready documents (pro + free)
+    class ProBuilder < Builder
+      # Get the loader class to use for this builder
+      #
+      # @return [Class] The ProLoader class
+      def self.loader_class
+        ProLoader
       end
     end
   end
