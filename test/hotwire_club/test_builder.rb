@@ -302,7 +302,7 @@ module HotwireClub
       assert_equal 4, docs.length, "Should have 4 ready documents (all)"
       doc_ids = docs.map(&:first).sort
 
-      assert_equal ["free-document-one", "free-document-two", "not-free-document", "no-free-flag-document"], doc_ids
+      assert_equal ["free-document-one", "free-document-two", "no-free-flag-document", "not-free-document"], doc_ids
     end
 
     def test_run_includes_all_ready_documents_when_free_only_not_specified
