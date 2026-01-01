@@ -31,3 +31,11 @@ end
 
 # Hook kb:build:free into the build task (for releases)
 Rake::Task[:build].enhance(["kb:build:free"])
+
+namespace :build do
+  desc "Build the knowledge base with all ready documents (pro + free) and then build the gem"
+  task :pro do
+    Rake::Task["kb:build:pro"].invoke
+    Rake::Task["build"].invoke
+  end
+end
