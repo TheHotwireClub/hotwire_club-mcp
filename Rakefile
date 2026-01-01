@@ -50,6 +50,16 @@ namespace :build do
       original_gemspec = File.read(original_gemspec_path)
       pro_gemspec_content = original_gemspec.gsub('spec.name = "hotwire_club-mcp"',
                                                   'spec.name = "hotwire_club-mcp-pro"')
+                                            .gsub('"db", "kb.sqlite"', '"db", "kb-pro.sqlite"')
+                                            .gsub('"db/kb.sqlite"', '"db/kb-pro.sqlite"')
+                                            # Explicitly remove free database file from spec.files (in case it's tracked in git)
+                                            .gsub(/spec\.files << "db\/kb-pro\.sqlite" if File\.exist\?\(db_path\)\n/,
+                                                  "spec.files.reject! { |f| f == \"db/kb.sqlite\" }\n  spec.files << \"db/kb-pro.sqlite\" if File.exist?(db_path)\n")
+
+      # Verify replacement worked
+      unless pro_gemspec_content.include?('"db", "kb-pro.sqlite"') && pro_gemspec_content.include?('"db/kb-pro.sqlite"')
+        raise "Failed to replace database paths in gemspec"
+      end
 
       # Write modified version to temp file, then move it to original location
       File.write(temp_gemspec_path, pro_gemspec_content)
