@@ -35,21 +35,23 @@ Rake::Task[:build].enhance(["kb:build:free"])
 namespace :build do
   desc "Build the knowledge base with all ready documents (pro + free) and then build the gem with -pro suffix"
   task pro: ["kb:build:pro"] do
-    require "rubygems/package"
+    require "bundler/gem_helper"
     require "fileutils"
 
-    # Load the gemspec and modify the name for pro version
-    spec = Gem::Specification.load("hotwire_club-mcp.gemspec")
-    original_name = spec.name
-    spec.name = "#{original_name}-pro"
+    # Read the original gemspec
+    original_gemspec = File.read("hotwire_club-mcp.gemspec")
+    pro_gemspec_content = original_gemspec.gsub(/spec\.name = "hotwire_club-mcp"/, 'spec.name = "hotwire_club-mcp-pro"')
 
-    # Build the gem package
-    gem_file = Gem::Package.build(spec)
+    begin
+      # Temporarily write the modified gemspec
+      File.write("hotwire_club-mcp.gemspec", pro_gemspec_content)
 
-    # Ensure pkg directory exists and move the gem there
-    FileUtils.mkdir_p("pkg")
-    pkg_path = File.join("pkg", gem_file)
-    FileUtils.mv(gem_file, pkg_path) if File.exist?(gem_file)
-    puts "Built: #{pkg_path}"
+      # Use GemHelper to build (it will use the modified gemspec)
+      helper = Bundler::GemHelper.new(Dir.pwd)
+      helper.build_gem
+    ensure
+      # Restore original gemspec
+      File.write("hotwire_club-mcp.gemspec", original_gemspec)
+    end
   end
 end
