@@ -27,7 +27,7 @@ end
 module HotwireClub
   module MCP
     # Data class representing a single document
-    Doc = Data.define(:id, :title, :category, :tags, :body, :summary, :date) {
+    Doc = Data.define(:id, :title, :category, :tags, :body, :summary, :date, :free) {
       # Generate a stable document ID from a title
       #
       # @param title [String] The document title
@@ -59,6 +59,7 @@ module HotwireClub
         body = parsed.content
         summary = extract_summary(front_matter, body)
         date = front_matter["date"]
+        free = front_matter["free"]
 
         new(
           id:       id,
@@ -68,6 +69,7 @@ module HotwireClub
           body:     body,
           summary:  summary,
           date:     date,
+          free:     free,
         )
       end
 

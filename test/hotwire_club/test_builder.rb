@@ -275,7 +275,152 @@ module HotwireClub
       assert_equal 0, chunk_count, "Should have 0 chunks"
     end
 
+    def test_run_filters_free_documents_when_free_only_true
+      create_mixed_docs
+
+      HotwireClub::MCP::Builder.run(@corpus_dir, @db_path, free_only: true)
+
+      db = SQLite3::Database.new(@db_path)
+      docs = db.execute("SELECT id, title FROM docs ORDER BY id")
+      db.close
+
+      assert_equal 2, docs.length, "Should have 2 free documents"
+      doc_ids = docs.map(&:first).sort
+
+      assert_equal ["free-document-one", "free-document-two"], doc_ids
+    end
+
+    def test_run_includes_all_ready_documents_when_free_only_false
+      create_mixed_docs
+
+      HotwireClub::MCP::Builder.run(@corpus_dir, @db_path, free_only: false)
+
+      db = SQLite3::Database.new(@db_path)
+      docs = db.execute("SELECT id, title FROM docs ORDER BY id")
+      db.close
+
+      assert_equal 4, docs.length, "Should have 4 ready documents (all)"
+      doc_ids = docs.map(&:first).sort
+
+      assert_equal ["free-document-one", "free-document-two", "not-free-document", "no-free-flag-document"], doc_ids
+    end
+
+    def test_run_includes_all_ready_documents_when_free_only_not_specified
+      create_mixed_docs
+
+      HotwireClub::MCP::Builder.run(@corpus_dir, @db_path)
+
+      db = SQLite3::Database.new(@db_path)
+      docs = db.execute("SELECT id, title FROM docs ORDER BY id")
+      db.close
+
+      assert_equal 4, docs.length, "Should have 4 ready documents (all, default behavior)"
+      doc_ids = docs.map(&:first).sort
+
+      assert_equal ["free-document-one", "free-document-two", "no-free-flag-document", "not-free-document"], doc_ids
+    end
+
+    def test_run_respects_ready_flag_even_when_free_only_true
+      # Create a document with free: true but ready: false (should be excluded)
+      file_not_ready = File.join(@corpus_dir, "not-ready.md")
+      File.write(file_not_ready, <<~MARKDOWN)
+        ---
+        title: Not Ready Document
+        ready: false
+        free: true
+        ---
+
+        This document is not ready.
+      MARKDOWN
+
+      # Create a document with ready: true and free: true
+      file_ready_and_free = File.join(@corpus_dir, "ready-free.md")
+      File.write(file_ready_and_free, <<~MARKDOWN)
+        ---
+        title: Ready and Free Document
+        ready: true
+        free: true
+        ---
+
+        This document is ready and free.
+      MARKDOWN
+
+      HotwireClub::MCP::Builder.run(@corpus_dir, @db_path, free_only: true)
+
+      db = SQLite3::Database.new(@db_path)
+      docs = db.execute("SELECT id, title FROM docs ORDER BY id")
+      db.close
+
+      assert_equal 1, docs.length, "Should have 1 document (ready and free)"
+      assert_equal "ready-and-free-document", docs.first[0]
+    end
+
     private
+
+    def create_mixed_docs
+      # Create free document
+      file1 = File.join(@corpus_dir, "free1.md")
+      File.write(file1, <<~MARKDOWN)
+        ---
+        title: Free Document One
+        ready: true
+        free: true
+        category: Turbo Drive
+        tags:
+          - rendering
+        description: This is a free document.
+        ---
+
+        This is a free document.
+      MARKDOWN
+
+      # Create another free document
+      file2 = File.join(@corpus_dir, "free2.md")
+      File.write(file2, <<~MARKDOWN)
+        ---
+        title: Free Document Two
+        ready: true
+        free: true
+        category: Stimulus
+        tags:
+          - actions
+        description: This is another free document.
+        ---
+
+        This is another free document.
+      MARKDOWN
+
+      # Create not-free document
+      file3 = File.join(@corpus_dir, "not-free.md")
+      File.write(file3, <<~MARKDOWN)
+        ---
+        title: Not Free Document
+        ready: true
+        free: false
+        category: Turbo Drive
+        tags:
+          - caching
+        description: This is not a free document.
+        ---
+
+        This is not a free document.
+      MARKDOWN
+
+      # Create document without free flag
+      file4 = File.join(@corpus_dir, "no-free-flag.md")
+      File.write(file4, <<~MARKDOWN)
+        ---
+        title: No Free Flag Document
+        ready: true
+        category: Stimulus
+        tags:
+          - controllers
+        description: This document has no free flag.
+        ---
+
+        This document has no free flag.
+      MARKDOWN
+    end
 
     def create_sample_docs
       # Create first document

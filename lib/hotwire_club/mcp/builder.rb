@@ -14,14 +14,16 @@ module HotwireClub
       #
       # @param corpus_path [String] Path to the corpus directory
       # @param db_path [String, nil] Optional database path (defaults to Schema::DB_PATH)
-      def self.run(corpus_path, db_path = nil)
+      # @param free_only [Boolean, nil] If true, only build documents with free: true.
+      #   If false or nil, build all ready documents.
+      def self.run(corpus_path, db_path = nil, free_only: nil)
         db_path ||= Schema::DB_PATH
 
         # 1. Create fresh database
         Schema.create!(db_path)
 
         # 2. Load documents
-        docs = Loader.load_docs(corpus_path)
+        docs = Loader.load_docs(corpus_path, free_only: free_only)
 
         # 3. Chunk documents
         chunks = Chunker.chunk_docs(docs)
