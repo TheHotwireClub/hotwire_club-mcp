@@ -45,13 +45,13 @@ rbenv rehash
 If you have purchased the pro version and received a `.gem` file, install it locally:
 
 ```bash
-gem install /path/to/hotwire_club-mcp-pro-0.1.0.gem
+gem install /path/to/hotwire_club-mcp-pro-VERSION.gem
 ```
 
 Or if you're in the same directory as the gem file:
 
 ```bash
-gem install ./hotwire_club-mcp-pro-0.1.0.gem
+gem install ./hotwire_club-mcp-pro-VERSION.gem
 ```
 
 After installation, the `hwc-mcp` executable will be available. If you're using `rbenv`, run `rbenv rehash` as described above.
