@@ -27,7 +27,7 @@ module HotwireClub
       # @param corpus_path [String] Path to corpus directory
       # @return [Array<Doc>] Array of Doc objects for files with ready: true and free: true
       def self.load_docs(corpus_path = "corpus")
-        super.select { |doc| doc.free == true }
+        super.select(&:free)
       end
     end
 
