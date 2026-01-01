@@ -2,6 +2,7 @@
 
 require "sqlite3"
 require "date"
+require "fileutils"
 require_relative "schema"
 require_relative "loader"
 require_relative "chunker"
@@ -16,6 +17,12 @@ module HotwireClub
       # @param db_path [String, nil] Optional database path (defaults to Schema::DB_PATH)
       def self.run(corpus_path, db_path = nil)
         db_path ||= Schema::DB_PATH
+
+        # 0. Purge all files in db directory to ensure clean build
+        db_dir = File.dirname(db_path)
+        if File.exist?(db_dir) && File.directory?(db_dir)
+          Dir.glob(File.join(db_dir, "*")).each { |file| FileUtils.rm_f(file) }
+        end
 
         # 1. Create fresh database
         Schema.create!(db_path)
