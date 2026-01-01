@@ -285,6 +285,168 @@ module HotwireClub
       assert_empty docs
     end
 
+    def test_filters_out_documents_without_free_true_when_free_only_true
+      # Create a file with ready: true but free: false
+      file_not_free = File.join(@corpus_dir, "not-free.md")
+      File.write(file_not_free, <<~MARKDOWN)
+        ---
+        title: Not Free Document
+        ready: true
+        free: false
+        ---
+
+        This document is not free.
+      MARKDOWN
+
+      # Create a file with ready: true and free: true
+      file_free = File.join(@corpus_dir, "free.md")
+      File.write(file_free, <<~MARKDOWN)
+        ---
+        title: Free Document
+        ready: true
+        free: true
+        ---
+
+        This document is free.
+      MARKDOWN
+
+      # Create a file with ready: true but no free flag (should be excluded when free_only: true)
+      file_no_free_flag = File.join(@corpus_dir, "no-free-flag.md")
+      File.write(file_no_free_flag, <<~MARKDOWN)
+        ---
+        title: No Free Flag Document
+        ready: true
+        ---
+
+        This document has no free flag.
+      MARKDOWN
+
+      docs = HotwireClub::MCP::FreeLoader.load_docs(@corpus_dir)
+
+      assert_equal 1, docs.length
+      assert_equal "free-document", docs.first.id
+      assert_equal "Free Document", docs.first.title
+    end
+
+    def test_includes_all_ready_documents_when_using_pro_loader
+      # Create a file with ready: true but free: false
+      file_not_free = File.join(@corpus_dir, "not-free.md")
+      File.write(file_not_free, <<~MARKDOWN)
+        ---
+        title: Not Free Document
+        ready: true
+        free: false
+        ---
+
+        This document is not free.
+      MARKDOWN
+
+      # Create a file with ready: true and free: true
+      file_free = File.join(@corpus_dir, "free.md")
+      File.write(file_free, <<~MARKDOWN)
+        ---
+        title: Free Document
+        ready: true
+        free: true
+        ---
+
+        This document is free.
+      MARKDOWN
+
+      # Create a file with ready: true but no free flag
+      file_no_free_flag = File.join(@corpus_dir, "no-free-flag.md")
+      File.write(file_no_free_flag, <<~MARKDOWN)
+        ---
+        title: No Free Flag Document
+        ready: true
+        ---
+
+        This document has no free flag.
+      MARKDOWN
+
+      docs = HotwireClub::MCP::ProLoader.load_docs(@corpus_dir)
+
+      assert_equal 3, docs.length
+      doc_ids = docs.map(&:id).sort
+
+      assert_equal ["free-document", "no-free-flag-document", "not-free-document"], doc_ids
+    end
+
+    def test_includes_all_ready_documents_when_using_base_loader
+      # Create a file with ready: true but free: false
+      file_not_free = File.join(@corpus_dir, "not-free.md")
+      File.write(file_not_free, <<~MARKDOWN)
+        ---
+        title: Not Free Document
+        ready: true
+        free: false
+        ---
+
+        This document is not free.
+      MARKDOWN
+
+      # Create a file with ready: true and free: true
+      file_free = File.join(@corpus_dir, "free.md")
+      File.write(file_free, <<~MARKDOWN)
+        ---
+        title: Free Document
+        ready: true
+        free: true
+        ---
+
+        This document is free.
+      MARKDOWN
+
+      # Create a file with ready: true but no free flag
+      file_no_free_flag = File.join(@corpus_dir, "no-free-flag.md")
+      File.write(file_no_free_flag, <<~MARKDOWN)
+        ---
+        title: No Free Flag Document
+        ready: true
+        ---
+
+        This document has no free flag.
+      MARKDOWN
+
+      docs = HotwireClub::MCP::Loader.load_docs(@corpus_dir)
+
+      assert_equal 3, docs.length
+      doc_ids = docs.map(&:id).sort
+
+      assert_equal ["free-document", "no-free-flag-document", "not-free-document"], doc_ids
+    end
+
+    def test_respects_ready_flag_even_when_free_only_true
+      # Create a file with free: true but ready: false (should be excluded)
+      file_not_ready = File.join(@corpus_dir, "not-ready.md")
+      File.write(file_not_ready, <<~MARKDOWN)
+        ---
+        title: Not Ready Document
+        ready: false
+        free: true
+        ---
+
+        This document is not ready.
+      MARKDOWN
+
+      # Create a file with ready: true and free: true
+      file_ready_and_free = File.join(@corpus_dir, "ready-free.md")
+      File.write(file_ready_and_free, <<~MARKDOWN)
+        ---
+        title: Ready and Free Document
+        ready: true
+        free: true
+        ---
+
+        This document is ready and free.
+      MARKDOWN
+
+      docs = HotwireClub::MCP::FreeLoader.load_docs(@corpus_dir)
+
+      assert_equal 1, docs.length
+      assert_equal "ready-and-free-document", docs.first.id
+    end
+
     def test_generates_id_from_title
       assert_equal "test-document", HotwireClub::MCP::Doc.id_from_title("Test Document")
       assert_equal "turbo-drive-custom-rendering", HotwireClub::MCP::Doc.id_from_title("Turbo Drive: Custom Rendering")

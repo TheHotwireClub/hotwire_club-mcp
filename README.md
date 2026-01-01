@@ -19,7 +19,9 @@ The knowledge base is pre-built and included in the gem, so no additional setup 
 
 ## Installation
 
-Install the gem:
+### Free Version
+
+Install the gem from RubyGems:
 
 ```bash
 gem install hotwire_club-mcp
@@ -38,9 +40,25 @@ rm -f ~/.rbenv/shims/.rbenv-shim
 rbenv rehash
 ```
 
+### Pro Version
+
+If you have purchased the pro version and received a `.gem` file, install it locally:
+
+```bash
+gem install /path/to/hotwire_club-mcp-pro-VERSION.gem
+```
+
+Or if you're in the same directory as the gem file:
+
+```bash
+gem install ./hotwire_club-mcp-pro-VERSION.gem
+```
+
+After installation, the `hwc-mcp` executable will be available. If you're using `rbenv`, run `rbenv rehash` as described above.
+
 ## Requirements
 
-- Ruby 3.1.0 or higher
+- Ruby 3.2.0 or higher
 - SQLite3
 
 ## Usage

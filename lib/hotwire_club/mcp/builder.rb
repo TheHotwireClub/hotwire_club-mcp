@@ -21,7 +21,7 @@ module HotwireClub
         Schema.create!(db_path)
 
         # 2. Load documents
-        docs = Loader.load_docs(corpus_path)
+        docs = loader_class.load_docs(corpus_path)
 
         # 3. Chunk documents
         chunks = Chunker.chunk_docs(docs)
@@ -37,6 +37,13 @@ module HotwireClub
         end
 
         db.close
+      end
+
+      # Get the loader class to use for this builder
+      #
+      # @return [Class] The loader class
+      def self.loader_class
+        Loader
       end
 
       # Convert date to string format for database storage
@@ -109,6 +116,26 @@ module HotwireClub
             [chunk.id, chunk.doc_id, chunk.title, chunk.text, chunk.category, comma_joined_tags, chunk.position],
           )
         end
+      end
+    end
+
+    # Builder for free documents only
+    class FreeBuilder < Builder
+      # Get the loader class to use for this builder
+      #
+      # @return [Class] The FreeLoader class
+      def self.loader_class
+        FreeLoader
+      end
+    end
+
+    # Builder for all ready documents (pro + free)
+    class ProBuilder < Builder
+      # Get the loader class to use for this builder
+      #
+      # @return [Class] The ProLoader class
+      def self.loader_class
+        ProLoader
       end
     end
   end

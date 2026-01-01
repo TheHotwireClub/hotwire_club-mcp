@@ -10,14 +10,59 @@ require "standard/rake"
 task default: [:test, :standard]
 
 namespace :kb do
-  desc "Build the knowledge base from corpus directory"
-  task :build do
-    require_relative "lib/hotwire_club/mcp"
+  namespace :build do
+    desc "Build the knowledge base from corpus directory (all ready documents)"
+    task :pro do
+      require_relative "lib/hotwire_club/mcp"
 
-    HotwireClub::MCP::Builder.run("corpus", "db/kb.sqlite")
-    puts "Knowledge base built successfully!"
+      HotwireClub::MCP::ProBuilder.run("corpus", "db/kb.sqlite")
+      puts "Knowledge base built successfully with all ready documents!"
+    end
+
+    desc "Build the knowledge base from corpus directory (free documents only)"
+    task :free do
+      require_relative "lib/hotwire_club/mcp"
+
+      HotwireClub::MCP::FreeBuilder.run("corpus", "db/kb.sqlite")
+      puts "Knowledge base built successfully with free documents only!"
+    end
   end
 end
 
-# Hook kb:build into the build task
-Rake::Task[:build].enhance(["kb:build"])
+# Hook kb:build:free into the build task (for releases)
+Rake::Task[:build].enhance(["kb:build:free"])
+
+namespace :build do
+  desc "Build the knowledge base with all ready documents (pro + free) and then build the gem with -pro suffix"
+  task pro: ["kb:build:pro"] do
+    require "bundler/gem_helper"
+    require "fileutils"
+
+    original_gemspec_path = "hotwire_club-mcp.gemspec"
+    backup_gemspec_path = "#{original_gemspec_path}.backup"
+    temp_gemspec_path = "hotwire_club-mcp-pro.gemspec"
+
+    begin
+      # Copy original gemspec to backup (safety net)
+      FileUtils.cp(original_gemspec_path, backup_gemspec_path)
+
+      # Read original and create modified version
+      original_gemspec = File.read(original_gemspec_path)
+      pro_gemspec_content = original_gemspec.gsub('spec.name = "hotwire_club-mcp"',
+                                                  'spec.name = "hotwire_club-mcp-pro"')
+
+      # Write modified version to temp file, then move it to original location
+      File.write(temp_gemspec_path, pro_gemspec_content)
+      FileUtils.mv(temp_gemspec_path, original_gemspec_path)
+
+      # Use GemHelper to build (it will use the modified gemspec)
+      helper = Bundler::GemHelper.new(Dir.pwd)
+      helper.build_gem
+    ensure
+      # Always restore original gemspec from backup
+      FileUtils.mv(backup_gemspec_path, original_gemspec_path) if File.exist?(backup_gemspec_path)
+      # Clean up any leftover temp file
+      FileUtils.rm_f(temp_gemspec_path)
+    end
+  end
+end
