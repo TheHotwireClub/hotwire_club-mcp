@@ -49,16 +49,16 @@ namespace :build do
 
       # Read original and create modified version
       original_gemspec = File.read(original_gemspec_path)
+      # Replace the spec.files line to exclude free db and include pro db
+      # Do this last to avoid the general replacement affecting our replacement string
       pro_gemspec_content = original_gemspec.gsub('spec.name = "hotwire_club-mcp"',
                                                   'spec.name = "hotwire_club-mcp-pro"')
                                             .gsub('"db", "kb.sqlite"', '"db", "kb-pro.sqlite"')
                                             .gsub('"db/kb.sqlite"', '"db/kb-pro.sqlite"')
-                                            # Explicitly remove free database file from spec.files
-                                            # (in case it's tracked in git)
                                             .gsub(
-                                              'spec.files << "db/kb-pro.sqlite" if File.exist?(db_path)\n',
+                                              'spec.files << "db/kb-pro.sqlite" if File.exist?(db_path)',
                                               "spec.files.reject! { |f| f == \"db/kb.sqlite\" }\n  " \
-                                              "spec.files << \"db/kb-pro.sqlite\" if File.exist?(db_path)\n",
+                                              "spec.files << \"db/kb-pro.sqlite\" if File.exist?(db_path)",
                                             )
 
       # Verify replacement worked
