@@ -36,7 +36,6 @@ namespace :build do
   desc "Build the knowledge base with all ready documents (pro + free) and then build the gem with -pro suffix"
   task pro: ["kb:build:pro"] do
     require "rubygems/package"
-    require_relative "hotwire_club-mcp.gemspec"
 
     # Load the gemspec and modify the name for pro version
     spec = Gem::Specification.load("hotwire_club-mcp.gemspec")
