@@ -33,9 +33,18 @@ end
 Rake::Task[:build].enhance(["kb:build:free"])
 
 namespace :build do
-  desc "Build the knowledge base with all ready documents (pro + free) and then build the gem"
-  task :pro => ["kb:build:pro"] do
-    require "bundler/gem_helper"
-    Bundler::GemHelper.new.build_gem
+  desc "Build the knowledge base with all ready documents (pro + free) and then build the gem with -pro suffix"
+  task pro: ["kb:build:pro"] do
+    require "rubygems/package"
+    require_relative "hotwire_club-mcp.gemspec"
+
+    # Load the gemspec and modify the name for pro version
+    spec = Gem::Specification.load("hotwire_club-mcp.gemspec")
+    original_name = spec.name
+    spec.name = "#{original_name}-pro"
+
+    # Build the gem package
+    gem_file = Gem::Package.build(spec)
+    puts "Built: #{gem_file}"
   end
 end
