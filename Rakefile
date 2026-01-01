@@ -38,20 +38,31 @@ namespace :build do
     require "bundler/gem_helper"
     require "fileutils"
 
-    # Read the original gemspec
-    original_gemspec = File.read("hotwire_club-mcp.gemspec")
-    pro_gemspec_content = original_gemspec.gsub('spec.name = "hotwire_club-mcp"', 'spec.name = "hotwire_club-mcp-pro"')
+    original_gemspec_path = "hotwire_club-mcp.gemspec"
+    backup_gemspec_path = "#{original_gemspec_path}.backup"
+    temp_gemspec_path = "hotwire_club-mcp-pro.gemspec"
 
     begin
-      # Temporarily write the modified gemspec
-      File.write("hotwire_club-mcp.gemspec", pro_gemspec_content)
+      # Copy original gemspec to backup (safety net)
+      FileUtils.cp(original_gemspec_path, backup_gemspec_path)
+
+      # Read original and create modified version
+      original_gemspec = File.read(original_gemspec_path)
+      pro_gemspec_content = original_gemspec.gsub('spec.name = "hotwire_club-mcp"',
+                                                  'spec.name = "hotwire_club-mcp-pro"')
+
+      # Write modified version to temp file, then move it to original location
+      File.write(temp_gemspec_path, pro_gemspec_content)
+      FileUtils.mv(temp_gemspec_path, original_gemspec_path)
 
       # Use GemHelper to build (it will use the modified gemspec)
       helper = Bundler::GemHelper.new(Dir.pwd)
       helper.build_gem
     ensure
-      # Restore original gemspec
-      File.write("hotwire_club-mcp.gemspec", original_gemspec)
+      # Always restore original gemspec from backup
+      FileUtils.mv(backup_gemspec_path, original_gemspec_path) if File.exist?(backup_gemspec_path)
+      # Clean up any leftover temp file
+      FileUtils.rm_f(temp_gemspec_path)
     end
   end
 end
