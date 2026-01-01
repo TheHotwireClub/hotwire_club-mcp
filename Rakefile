@@ -15,7 +15,7 @@ namespace :kb do
     task :pro do
       require_relative "lib/hotwire_club/mcp"
 
-      HotwireClub::MCP::ProBuilder.run("corpus", "db/kb.sqlite")
+      HotwireClub::MCP::ProBuilder.run("corpus", "db/kb-pro.sqlite")
       puts "Knowledge base built successfully with all ready documents!"
     end
 
